@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage 
+    x:Class="ProVoiceLedger.Pages.SessionHistoryPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Session History"
+    BackgroundColor="Black"
+    Padding="20">
+
+    <ContentPage.Resources>
+        <Style TargetType="Label">
+            <Setter Property="TextColor" Value="White"/>
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <StackLayout Spacing="12">
+            <Label 
+                Text="🕯️ Saved Sessions"
+                FontSize="24"
+                FontAttributes="Bold"
+                HorizontalOptions="Center"
+                Margin="0,0,0,12"/>
+
+            <CollectionView x:Name="SessionsView" ItemsSource="{Binding Sessions}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame 
+                            BackgroundColor="#1E1E1E"
+                            CornerRadius="12"
+                            Padding="16"
+                            HasShadow="True"
+                            Margin="0,0,0,8">
+                            <StackLayout>
+                                <Label 
+                                    Text="{Binding Title}" 
+                                    FontSize="20" 
+                                    FontAttributes="Bold" />
+                                <Label 
+                                    Text="{Binding StartTime, StringFormat='{}{0:MMM dd, yyyy hh:mm tt}'}" 
+                                    FontSize="14" 
+                                    TextColor="#BBBBBB" />
+                            </StackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

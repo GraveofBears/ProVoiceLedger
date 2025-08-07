@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ProVoiceLedger.Pages.LoginPage"
+             BackgroundColor="#f8f9fa"
+             Title="Login">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="16">
+
+            <!-- 🖼 Logo Image: synced with SplashPage for seamless transition -->
+            <Image x:Name="LogoImage"
+                   Source="logoimage.png"
+                   HeightRequest="250"
+                   WidthRequest="250"
+                   HorizontalOptions="Center"
+                   Margin="0,-16,0,0"
+                   Opacity="1" />
+
+            <!-- 🧾 Page Title -->
+            <Label Text="Sign In"
+                   FontSize="26"
+                   FontAttributes="Bold"
+                   TextColor="#333"
+                   HorizontalOptions="Center"
+                   Margin="0,8,0,0"
+                   SemanticProperties.HeadingLevel="Level1" />
+
+            <!-- 👤 Username Label & Entry -->
+            <Label Text="Username"
+                   FontSize="14"
+                   TextColor="#555"
+                   Margin="0,8,0,0" />
+            <Frame CornerRadius="6"
+                   BorderColor="#d3d3d3"
+                   BackgroundColor="#ffffff"
+                   Padding="6"
+                   HasShadow="False">
+                <Entry x:Name="UsernameEntry"
+                       Placeholder="Enter your username"
+                       BackgroundColor="Transparent"
+                       TextColor="#333"
+                       AutomationId="UsernameField" />
+            </Frame>
+
+            <!-- 🔒 Password Label & Entry -->
+            <Label Text="Password"
+                   FontSize="14"
+                   TextColor="#555"
+                   Margin="0,12,0,0" />
+            <Frame CornerRadius="6"
+                   BorderColor="#d3d3d3"
+                   BackgroundColor="#ffffff"
+                   Padding="6"
+                   HasShadow="False">
+                <Entry x:Name="PasswordEntry"
+                       Placeholder="Enter your password"
+                       IsPassword="True"
+                       BackgroundColor="Transparent"
+                       TextColor="#333"
+                       AutomationId="PasswordField" />
+            </Frame>
+
+            <!-- 🚀 Login Button -->
+            <Button Text="Login"
+                    x:Name="LoginButton"
+                    Clicked="OnLoginButtonClicked"
+                    BackgroundColor="#5dade2"
+                    TextColor="White"
+                    CornerRadius="12"
+                    HeightRequest="46"
+                    FontAttributes="Bold"
+                    Margin="0,24,0,0"
+                    AutomationId="LoginButton" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

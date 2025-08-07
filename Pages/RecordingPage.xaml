@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="ProVoiceLedger.Pages.RecordingPage"
+    Title="Dictate"
+    BackgroundColor="#FAFAFA">
+
+    <VerticalStackLayout Padding="24" Spacing="20">
+
+        <!-- 🧭 Header with title and settings gear -->
+        <Grid ColumnDefinitions="*,Auto">
+            <Label Text="Dictate"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   TextColor="#333"
+                   VerticalOptions="Center" />
+
+            <ImageButton Source="settings_gear.png"
+                         WidthRequest="28"
+                         HeightRequest="28"
+                         BackgroundColor="Transparent"
+                         Clicked="OnSettingsClicked"
+                         HorizontalOptions="End"
+                         VerticalOptions="Center"
+                         Grid.Column="1" />
+        </Grid>
+
+        <!-- 📈 Waveform + Timestamp -->
+        <VerticalStackLayout Spacing="8" Margin="0,12,0,0">
+
+            <!-- Simulated waveform meter -->
+            <ProgressBar x:Name="WaveformBar"
+                         Progress="0"
+                         HeightRequest="12"
+                         BackgroundColor="#DDD"
+                         ProgressColor="#673AB7" />
+
+            <!-- Timestamp display -->
+            <Label x:Name="TimestampLabel"
+                   Text="00:00 / 00:00"
+                   FontSize="14"
+                   TextColor="#666"
+                   HorizontalOptions="Center" />
+        </VerticalStackLayout>
+
+        <!-- 🎙️ Recording Controls -->
+        <VerticalStackLayout Spacing="12" Margin="0,24,0,0">
+
+            <Button Text="Start Recording"
+                    Clicked="OnRecordButtonClicked"
+                    BackgroundColor="#4CAF50"
+                    TextColor="White"
+                    CornerRadius="8"
+                    FontAttributes="Bold"
+                    HeightRequest="48" />
+
+            <Button Text="Stop Recording"
+                    Clicked="OnStopButtonClicked"
+                    BackgroundColor="#F44336"
+                    TextColor="White"
+                    CornerRadius="8"
+                    FontAttributes="Bold"
+                    HeightRequest="48" />
+
+            <Button Text="Play Last Recording"
+                    Clicked="OnPlayButtonClicked"
+                    BackgroundColor="#2196F3"
+                    TextColor="White"
+                    CornerRadius="8"
+                    FontAttributes="Bold"
+                    HeightRequest="48" />
+
+        </VerticalStackLayout>
+
+    </VerticalStackLayout>
+</ContentPage>

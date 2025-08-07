@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="ProVoiceLedger.Pages.SettingsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Settings"
+    BackgroundColor="#FAFAFA">
+
+	<VerticalStackLayout Padding="24" Spacing="20">
+
+		<!-- 🧭 Header -->
+		<Label Text="Settings"
+               FontSize="24"
+               FontAttributes="Bold"
+               TextColor="#333"
+               HorizontalOptions="Center" />
+
+		<!-- 🔓 Logout Button -->
+		<Button Text="Log Out"
+                Clicked="OnLogoutClicked"
+                BackgroundColor="#E53935"
+                TextColor="White"
+                CornerRadius="8"
+                FontAttributes="Bold"
+                HeightRequest="48"
+                HorizontalOptions="Fill" />
+
+		<!-- 📦 App Version Display -->
+		<Label Text="{Binding AppVersion}"
+               FontSize="14"
+               TextColor="#666"
+               HorizontalOptions="Center" />
+
+		<!-- 🧪 Optional: Add more settings here -->
+		<!-- Toggle for dark mode, audio format, ghost mode, etc. -->
+
+	</VerticalStackLayout>
+</ContentPage>

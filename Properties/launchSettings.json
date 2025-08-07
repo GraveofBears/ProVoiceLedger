@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "Windows Machine": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    },
+    "Android Emulator": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ANDROID_FAST_DEPLOYMENT_TYPE": "Assemblies:Dexes"
+      }
+    }
+  }
+}
