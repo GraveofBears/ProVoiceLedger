@@ -37,8 +37,8 @@ namespace ProVoiceLedger.Platforms.Android
                 return false;
 
             _sessionName = sessionName;
-            _metadata = metadata;
-            _startTime = DateTime.Now;
+            _metadata = metadata ?? new Dictionary<string, string>();
+            _startTime = DateTime.UtcNow;
             _isRecording = true;
 
             var dir = Path.Combine(FileSystem.AppDataDirectory, "Recordings");
@@ -66,7 +66,8 @@ namespace ProVoiceLedger.Platforms.Android
 
         public async Task<RecordedClipInfo?> StopRecordingAsync()
         {
-            if (!_isRecording) return null;
+            if (!_isRecording || _pcmFilePath == null || _wavFilePath == null)
+                return null;
 
             _isRecording = false;
             _recordingTokenSource?.Cancel();
@@ -75,26 +76,22 @@ namespace ProVoiceLedger.Platforms.Android
             _audioRecord?.Release();
             _audioRecord = null;
 
-            await _outputStream?.FlushAsync()!;
-            _outputStream?.Dispose();
+            await _outputStream!.FlushAsync();
+            _outputStream.Dispose();
             _outputStream = null;
 
-            // Convert PCM to WAV for playback and duration support
-            ConvertPcmToWav(_pcmFilePath!, _wavFilePath!);
+            ConvertPcmToWav(_pcmFilePath, _wavFilePath);
 
-            var duration = DateTime.Now - _startTime;
-            var timestamp = DateTime.Now;
+            var duration = DateTime.UtcNow - _startTime;
 
-            return new RecordedClipInfo
-            {
-                FilePath = _wavFilePath ?? string.Empty,
-                Duration = duration,
-                SessionName = _sessionName ?? string.Empty,
-                Timestamp = timestamp,
-                Metadata = _metadata,
-                RecordedAt = timestamp,
-                DeviceUsed = "Android Mic"
-            };
+            return new RecordedClipInfo(
+               // filePath: _wavFilePath,
+               // duration: duration.TotalSeconds,
+              //  sessionName: _sessionName ?? "Untitled",
+              //  recordedAt: DateTime.UtcNow,
+               // deviceUsed: "Android Mic",
+               // metadata: _metadata
+            );
         }
 
         public async Task PlayAudioAsync(string filePath)

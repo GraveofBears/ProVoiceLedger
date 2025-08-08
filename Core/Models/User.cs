@@ -7,6 +7,5 @@
         public string PasswordHash { get; set; } = string.Empty;
         public string DisplayName { get; set; } = string.Empty;
         public bool IsSuspended { get; set; }
-        public string Role { get; set; } = string.Empty;
     }
 }

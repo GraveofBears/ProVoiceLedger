@@ -15,7 +15,6 @@ namespace ProVoiceLedger.Core.Services
                     PasswordHash = "password123",
                     DisplayName = "Administrator",
                     IsSuspended = false,
-                    Role = "Admin"
                 }
                 : null;
         }

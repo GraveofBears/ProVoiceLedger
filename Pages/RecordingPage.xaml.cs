@@ -1,28 +1,34 @@
 ﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Devices;
 using ProVoiceLedger.Core.Services;
+using ProVoiceLedger.Core.Models;
+using ProVoiceLedger.Core.Audio;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Timers;
-using ProVoiceLedger.Core.Models;
-
 
 namespace ProVoiceLedger.Pages
 {
     public partial class RecordingPage : ContentPage
     {
-        private readonly RecordingService _recordingService;
-        private readonly Timer _waveformTimer;
+        private readonly IRecordingService _recordingService;
+        private readonly System.Timers.Timer _waveformTimer;
+        private readonly PlaybackController _playbackController;
         private DateTime _recordingStartTime;
         private bool _isRecording;
 
-        public RecordingPage(RecordingService recordingService)
+        public RecordingPage() : this(App.RecordingService) { }
+
+        public RecordingPage(IRecordingService recordingService)
         {
             InitializeComponent();
             _recordingService = recordingService;
 
-            _waveformTimer = new Timer(500); // update every 0.5s
-            _waveformTimer.Elapsed += UpdateWaveform;
+            _waveformTimer = new System.Timers.Timer(500);
+            _waveformTimer.Elapsed += OnWaveformTimerElapsed;
+
+            _playbackController = new PlaybackController(_recordingService);
+            _playbackController.PlaybackProgressUpdated += OnPlaybackProgressUpdated;
         }
 
         private async void OnRecordButtonClicked(object sender, EventArgs e)
@@ -32,7 +38,8 @@ namespace ProVoiceLedger.Pages
                 var metadata = new Dictionary<string, string>
                 {
                     { "Session", "Dictation" },
-                    { "StartedAt", DateTime.UtcNow.ToString("o") }
+                    { "StartedAt", DateTime.UtcNow.ToString("o") },
+                    { "Device", DeviceInfo.Name }
                 };
 
                 await _recordingService.StartRecordingAsync("DictateSession", metadata);
@@ -42,7 +49,7 @@ namespace ProVoiceLedger.Pages
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"StartRecordingAsync error: {ex.Message}");
+                Console.WriteLine($"StartRecordingAsync error: {ex}");
                 await DisplayAlert("Error", "Failed to start recording.", "OK");
             }
         }
@@ -54,38 +61,56 @@ namespace ProVoiceLedger.Pages
                 _waveformTimer.Stop();
                 _isRecording = false;
 
-                using var stream = await _recordingService.GetLastRecordingAsync();
+                var clip = await _recordingService.StopRecordingAsync();
+                clip.Metadata["StoppedAt"] = DateTime.UtcNow.ToString("o");
 
-                var metadata = new Dictionary<string, string>
-                {
-                    { "StoppedAt", DateTime.UtcNow.ToString("o") }
-                };
-
-                await _recordingService.SaveRecordingAsync("DictateSession", stream, metadata);
+                await _recordingService.SaveRecordingAsync(clip);
                 await DisplayAlert("Saved", "Recording saved successfully.", "OK");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"SaveRecordingAsync error: {ex.Message}");
+                Console.WriteLine($"StopRecordingAsync error: {ex}");
                 await DisplayAlert("Error", "Failed to save recording.", "OK");
             }
+
+            _playbackController.Stop();
         }
 
         private async void OnPlayButtonClicked(object sender, EventArgs e)
         {
             try
             {
-                using var stream = await _recordingService.GetLastRecordingAsync();
-                await _recordingService.PlayRecordingAsync(stream);
+                var clip = await _recordingService.GetLastRecordingAsync();
+                if (clip != null)
+                {
+                    _playbackController.Play(clip);
+                }
+                else
+                {
+                    await DisplayAlert("No Recording", "No recording found to play.", "OK");
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"PlayRecordingAsync error: {ex.Message}");
+                Console.WriteLine($"Play error: {ex}");
                 await DisplayAlert("Error", "Failed to play recording.", "OK");
             }
         }
 
-        private void UpdateWaveform(object sender, ElapsedEventArgs e)
+        private void OnPauseClicked(object sender, EventArgs e) => _playbackController.Pause();
+        private void OnRewindClicked(object sender, EventArgs e) => _playbackController.Rewind(TimeSpan.FromSeconds(5));
+        private void OnFastForwardClicked(object sender, EventArgs e) => _playbackController.FastForward(TimeSpan.FromSeconds(5));
+
+        private void OnPlaybackProgressUpdated(TimeSpan elapsed)
+        {
+            Dispatcher.Dispatch(() =>
+            {
+                TimestampLabel.Text = $"{elapsed:mm\\:ss} / ∞";
+                WaveformBar.Progress = new Random().NextDouble();
+            });
+        }
+
+        private void OnWaveformTimerElapsed(object sender, ElapsedEventArgs e)
         {
             if (!_isRecording)
                 return;
@@ -93,7 +118,7 @@ namespace ProVoiceLedger.Pages
             Dispatcher.Dispatch(() =>
             {
                 var elapsed = DateTime.UtcNow - _recordingStartTime;
-                WaveformBar.Progress = new Random().NextDouble(); // Simulated waveform
+                WaveformBar.Progress = new Random().NextDouble();
                 TimestampLabel.Text = $"{elapsed:mm\\:ss} / ∞";
             });
         }

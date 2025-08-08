@@ -71,6 +71,12 @@
   <!-- Registered XAML Pages -->
   <ItemGroup>
     <MauiXaml Update="Pages\LoginPage.xaml" />
+    <MauiXaml Update="Pages\MainTabbedPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\RecordingListPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
     <MauiXaml Update="Pages\SettingsPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>

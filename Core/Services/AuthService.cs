@@ -23,8 +23,7 @@ namespace ProVoiceLedger.Core.Services
                 {
                     Success = false,
                     Message = "User not found",
-                    Token = string.Empty,
-                    Role = string.Empty
+                    Token = string.Empty
                 };
             }
 
@@ -34,12 +33,10 @@ namespace ProVoiceLedger.Core.Services
                 {
                     Success = false,
                     Message = "Account is suspended",
-                    Token = string.Empty,
-                    Role = string.Empty
+                    Token = string.Empty
                 };
             }
 
-            // ✅ Secure password verification using bcrypt
             bool isPasswordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
             if (!isPasswordValid)
             {
@@ -47,8 +44,7 @@ namespace ProVoiceLedger.Core.Services
                 {
                     Success = false,
                     Message = "Invalid password",
-                    Token = string.Empty,
-                    Role = string.Empty
+                    Token = string.Empty
                 };
             }
 
@@ -57,17 +53,16 @@ namespace ProVoiceLedger.Core.Services
                 Success = true,
                 Message = "Login successful",
                 Token = GenerateSessionToken(user.Username),
-                Role = user.Role
             };
         }
 
-        public string GenerateSessionToken(string username)
+        public static string GenerateSessionToken(string username)
         {
             // You’ll likely replace this with a JWT or encrypted token later
             return Convert.ToBase64String(Guid.NewGuid().ToByteArray());
         }
 
-        public bool ValidateSessionToken(string token)
+        public static bool ValidateSessionToken(string token)
         {
             // TODO: Add real validation with expiration and hash check
             return !string.IsNullOrWhiteSpace(token);

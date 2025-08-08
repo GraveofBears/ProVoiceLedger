@@ -1,77 +1,76 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="ProVoiceLedger.Pages.RecordingPage"
-    Title="Dictate"
-    BackgroundColor="#FAFAFA">
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ProVoiceLedger.Pages.RecordingPage"
+             BackgroundColor="White"
+             Padding="20">
 
-    <VerticalStackLayout Padding="24" Spacing="20">
+    <VerticalStackLayout Spacing="30" HorizontalOptions="Center" VerticalOptions="Center">
 
-        <!-- 🧭 Header with title and settings gear -->
-        <Grid ColumnDefinitions="*,Auto">
-            <Label Text="Dictate"
-                   FontSize="24"
-                   FontAttributes="Bold"
-                   TextColor="#333"
-                   VerticalOptions="Center" />
+        <!-- 🎙️ Record Button -->
+        <ImageButton Source="record.png"
+                     WidthRequest="80"
+                     HeightRequest="80"
+                     BackgroundColor="Transparent"
+                     Clicked="OnRecordButtonClicked"/>
 
-            <ImageButton Source="settings_gear.png"
-                         WidthRequest="28"
-                         HeightRequest="28"
+        <!-- 📈 Waveform Progress -->
+        <ProgressBar x:Name="WaveformBar"
+                     WidthRequest="200"
+                     HeightRequest="6"
+                     Progress="0"
+                     BackgroundColor="Transparent"
+                     ProgressColor="cyan"
+                     HorizontalOptions="Center" />
+
+        <!-- ⏱️ Timestamp Label -->
+        <Label x:Name="TimestampLabel"
+               Text="00:00 / ∞"
+               FontSize="14"
+               TextColor="DarkBlue"
+               HorizontalOptions="Center" />
+
+        <!-- ▶️ Playback Controls -->
+        <HorizontalStackLayout Spacing="20" HorizontalOptions="Center">
+            <ImageButton Source="rewind.png"
+                         WidthRequest="50"
+                         HeightRequest="50"
                          BackgroundColor="Transparent"
-                         Clicked="OnSettingsClicked"
-                         HorizontalOptions="End"
-                         VerticalOptions="Center"
-                         Grid.Column="1" />
-        </Grid>
+                         Clicked="OnRewindClicked"/>
 
-        <!-- 📈 Waveform + Timestamp -->
-        <VerticalStackLayout Spacing="8" Margin="0,12,0,0">
+            <ImageButton Source="play.png"
+                         WidthRequest="60"
+                         HeightRequest="60"
+                         BackgroundColor="Transparent"
+                         Clicked="OnPlayButtonClicked"/>
 
-            <!-- Simulated waveform meter -->
-            <ProgressBar x:Name="WaveformBar"
-                         Progress="0"
-                         HeightRequest="12"
-                         BackgroundColor="#DDD"
-                         ProgressColor="#673AB7" />
+            <ImageButton Source="pause.png"
+                         WidthRequest="50"
+                         HeightRequest="50"
+                         BackgroundColor="Transparent"
+                         Clicked="OnPauseClicked"/>
 
-            <!-- Timestamp display -->
-            <Label x:Name="TimestampLabel"
-                   Text="00:00 / 00:00"
-                   FontSize="14"
-                   TextColor="#666"
-                   HorizontalOptions="Center" />
-        </VerticalStackLayout>
+            <ImageButton Source="fast_forward.png"
+                         WidthRequest="50"
+                         HeightRequest="50"
+                         BackgroundColor="Transparent"
+                         Clicked="OnFastForwardClicked"/>
+        </HorizontalStackLayout>
 
-        <!-- 🎙️ Recording Controls -->
-        <VerticalStackLayout Spacing="12" Margin="0,24,0,0">
+        <!-- 🛑 Stop Button -->
+        <ImageButton Source="finish.png"
+                     WidthRequest="60"
+                     HeightRequest="60"
+                     BackgroundColor="Transparent"
+                     Clicked="OnStopButtonClicked"/>
 
-            <Button Text="Start Recording"
-                    Clicked="OnRecordButtonClicked"
-                    BackgroundColor="#4CAF50"
-                    TextColor="White"
-                    CornerRadius="8"
-                    FontAttributes="Bold"
-                    HeightRequest="48" />
-
-            <Button Text="Stop Recording"
-                    Clicked="OnStopButtonClicked"
-                    BackgroundColor="#F44336"
-                    TextColor="White"
-                    CornerRadius="8"
-                    FontAttributes="Bold"
-                    HeightRequest="48" />
-
-            <Button Text="Play Last Recording"
-                    Clicked="OnPlayButtonClicked"
-                    BackgroundColor="#2196F3"
-                    TextColor="White"
-                    CornerRadius="8"
-                    FontAttributes="Bold"
-                    HeightRequest="48" />
-
-        </VerticalStackLayout>
+        <!-- ⚙️ Settings -->
+        <ImageButton Source="settings.png"
+                     WidthRequest="40"
+                     HeightRequest="40"
+                     BackgroundColor="Transparent"
+                     Clicked="OnSettingsClicked"
+                     HorizontalOptions="End" />
 
     </VerticalStackLayout>
 </ContentPage>

@@ -1,5 +1,6 @@
 ﻿using ProVoiceLedger.Core.Models;
 using ProVoiceLedger.Core.Services;
+
 namespace ProVoiceLedger.Core.Services
 {
     public class CommunicationService
@@ -15,14 +16,15 @@ namespace ProVoiceLedger.Core.Services
 
         public LoginResponse HandleLogin(LoginRequest request)
         {
-            // Use the AuthService to validate credentials and return the response directly
+            ArgumentNullException.ThrowIfNull(request);
             return _authService.ValidateCredentials(request);
         }
 
         public bool HandleFileTransfer(FileTransferRequest request)
         {
-            // Optional: validate session token
-            if (!_authService.ValidateSessionToken(request.SessionToken))
+            ArgumentNullException.ThrowIfNull(request);
+
+            if (!AuthService.ValidateSessionToken(request.SessionToken))
                 return false;
 
             return _fileStorageService.SaveFile(request.Filename, request.FileBytes);

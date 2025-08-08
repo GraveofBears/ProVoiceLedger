@@ -1,5 +1,4 @@
-﻿// File: Core/Services/LoginService.cs
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Microsoft.Maui.Storage;
@@ -33,11 +32,10 @@ namespace ProVoiceLedger.Core.Services
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    return new LoginResponse
-                    {
-                        Success = false,
-                        Message = $"Server Error: {response.StatusCode}"
-                    };
+                    return new LoginResponse(
+                        success: false,
+                        message: $"Server Error: {response.StatusCode}"
+                    );
                 }
 
                 var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
@@ -46,19 +44,17 @@ namespace ProVoiceLedger.Core.Services
                     await SecureStorage.SetAsync("auth_token", result.Token);
                 }
 
-                return result ?? new LoginResponse
-                {
-                    Success = false,
-                    Message = "Unexpected server response"
-                };
+                return result ?? new LoginResponse(
+                    success: false,
+                    message: "Unexpected server response"
+                );
             }
             catch (Exception ex)
             {
-                return new LoginResponse
-                {
-                    Success = false,
-                    Message = $"Network Error: {ex.Message}"
-                };
+                return new LoginResponse(
+                    success: false,
+                    message: $"Network Error: {ex.Message}"
+                );
             }
         }
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
 using ProVoiceLedger.Core.Models;
+using ProVoiceLedger.Core.Services;
 using System;
 using System.Threading.Tasks;
 
@@ -23,36 +24,34 @@ namespace ProVoiceLedger.Pages
             await AnimateLogoIntro();
             await Task.Delay(1000);
 
-            string? token = null;
-            try
-            {
-                token = await SecureStorage.GetAsync("auth_token");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"SecureStorage error: {ex.Message}");
-            }
+            var recordingService = App.RecordingService;
+            User? restoredUser = null;
 
-            Page destination;
-            if (!string.IsNullOrEmpty(token))
+            // 🔧 Cast to concrete type to access internal methods
+            if (recordingService is RecordingService concrete)
             {
-                var restoredUser = new User
+                try
                 {
-                    Id = Guid.NewGuid().ToString(),
-                    Username = "RestoredUser",
-                    PasswordHash = string.Empty,
-                    DisplayName = "Restored User",
-                    Role = "User",
-                    IsSuspended = false
-                };
+                    restoredUser = await concrete.TryRestoreUserAsync();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"⚠️ User restoration failed: {ex.Message}");
+                }
 
-                destination = new RecordingPage(App.AudioService, App.SessionDb, restoredUser);
-            }
-            else
-            {
-                destination = new LoginPage();
+                if (restoredUser != null)
+                {
+                    concrete.SetCurrentUser(restoredUser);
+                    NavigateTo(new RecordingPage(concrete));
+                    return;
+                }
             }
 
+            NavigateTo(new LoginPage());
+        }
+
+        private void NavigateTo(Page destination)
+        {
             Application.Current?.Dispatcher.Dispatch(() =>
             {
                 Application.Current.MainPage = new NavigationPage(destination);

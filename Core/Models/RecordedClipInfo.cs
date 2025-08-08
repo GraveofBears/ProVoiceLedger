@@ -10,20 +10,22 @@ namespace ProVoiceLedger.Core.Models
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
 
-        public string FilePath { get; set; } = string.Empty;
+        /// <summary>📁 Path to the saved audio file</summary>
+        public string FilePath { get; set; }
 
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        /// <summary>🕒 UTC timestamp when recording was saved</summary>
+        public DateTime Timestamp { get; set; }
 
-        public string SessionName { get; set; } = string.Empty;
+        /// <summary>🧭 Session name this recording belongs to</summary>
+        public string SessionName { get; set; }
 
-        /// <summary>
-        /// Serialized metadata for SQLite storage.
-        /// </summary>
-        public string MetadataJson { get; set; } = "{}";
+        /// <summary>⏱️ Duration in seconds</summary>
+        public double Duration { get; set; }
 
-        /// <summary>
-        /// Deserialized metadata dictionary (ignored by SQLite).
-        /// </summary>
+        /// <summary>🧠 Serialized metadata (e.g., device, tags)</summary>
+        public string MetadataJson { get; set; }
+
+        /// <summary>🧩 Deserialized metadata dictionary</summary>
         [Ignore]
         public Dictionary<string, string> Metadata
         {
@@ -33,6 +35,41 @@ namespace ProVoiceLedger.Core.Models
             set => MetadataJson = JsonSerializer.Serialize(value);
         }
 
+        /// <summary>🗓️ Optional override for recorded timestamp</summary>
+        public DateTime? RecordedAtOverride { get; set; }
+
+        /// <summary>📱 Optional override for device name</summary>
+        public string? DeviceUsedOverride { get; set; }
+
+        /// <summary>🗓️ Alias for recorded timestamp (fallback to Timestamp)</summary>
+        [Ignore]
+        public DateTime RecordedAt => RecordedAtOverride ?? Timestamp;
+
+        /// <summary>📱 Alias for device name (fallback to metadata)</summary>
+        [Ignore]
+        public string DeviceUsed =>
+            !string.IsNullOrWhiteSpace(DeviceUsedOverride)
+                ? DeviceUsedOverride
+                : Metadata.TryGetValue("Device", out var device) ? device : "Unknown";
+
         public RecordedClipInfo() { }
+
+        public RecordedClipInfo(
+            string filePath,
+            double duration,
+            string sessionName,
+            DateTime timestamp,
+            Dictionary<string, string>? metadata = null,
+            DateTime? recordedAtOverride = null,
+            string? deviceUsedOverride = null)
+        {
+            FilePath = filePath;
+            Duration = duration;
+            SessionName = sessionName;
+            Timestamp = timestamp;
+            Metadata = metadata ?? new();
+            RecordedAtOverride = recordedAtOverride;
+            DeviceUsedOverride = deviceUsedOverride;
+        }
     }
 }

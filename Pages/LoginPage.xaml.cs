@@ -25,12 +25,7 @@ namespace ProVoiceLedger.Pages
         {
             string username = UsernameEntry?.Text?.Trim() ?? string.Empty;
             string rawPassword = PasswordEntry?.Text ?? string.Empty;
-
-            Console.WriteLine($"🔐 Raw password input: '{rawPassword}'");
-
             string password = rawPassword.Trim().Normalize(NormalizationForm.FormC);
-
-            Console.WriteLine($"🔐 Final password sent: '{password}'");
 
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
@@ -52,12 +47,11 @@ namespace ProVoiceLedger.Pages
                 {
                     var user = new User
                     {
-                        Id = Guid.NewGuid().ToString(),
+                        Id = result.UserId ?? Guid.NewGuid().ToString(),
                         Username = username,
                         PasswordHash = string.Empty,
                         DisplayName = username,
-                        Role = result.Role ?? "User",
-                        IsSuspended = result.Role == "Suspended"
+                        IsSuspended = false
                     };
 
                     try
@@ -69,11 +63,13 @@ namespace ProVoiceLedger.Pages
                         Console.WriteLine($"Token save failed: {tokenEx.Message}");
                     }
 
-                    var recordingPage = new RecordingPage(App.AudioService, App.SessionDb, user);
+                    App.RecordingService.SetCurrentUser(user); // ✅ Works if interface includes it
+
+                    var mainTabs = new MainTabbedPage();
 
                     Application.Current?.Dispatcher.Dispatch(() =>
                     {
-                        Application.Current.MainPage = new NavigationPage(recordingPage);
+                        Application.Current.MainPage = new NavigationPage(mainTabs);
                     });
                 }
                 else

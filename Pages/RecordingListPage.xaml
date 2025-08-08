@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ProVoiceLedger.Pages.RecordingListPage"
+             BackgroundColor="White"
+             Title="Recordings">
+
+    <Grid RowSpacing="0" ColumnSpacing="0" Padding="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- 🧭 Header -->
+        <Label Text="Your Recordings"
+               FontSize="24"
+               FontAttributes="Bold"
+               TextColor="Black"
+               HorizontalOptions="Center"
+               Margin="0,20,0,10"
+               Grid.Row="0" />
+
+        <!-- 📜 List of Recordings -->
+        <CollectionView x:Name="RecordingsView"
+                        SelectionMode="None"
+                        Grid.Row="1">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Padding="12"
+                           Margin="0,6"
+                           BackgroundColor="#F5F5F5"
+                           HasShadow="False"
+                           CornerRadius="8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- 🎙️ Clip Info -->
+                            <VerticalStackLayout>
+                                <Label Text="{Binding Title}"
+                                       FontSize="18"
+                                       FontAttributes="Bold"
+                                       TextColor="Black" />
+                                <Label Text="{Binding Timestamp}"
+                                       FontSize="14"
+                                       TextColor="Gray" />
+                            </VerticalStackLayout>
+
+                            <!-- ▶️ Play Button -->
+                            <ImageButton Source="playicon.png"
+                                         WidthRequest="32"
+                                         HeightRequest="32"
+                                         BackgroundColor="Transparent"
+                                         CommandParameter="{Binding .}"
+                                         Clicked="OnPlayClicked"
+                                         Grid.Column="1" />
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

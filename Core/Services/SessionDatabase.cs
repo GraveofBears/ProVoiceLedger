@@ -1,9 +1,9 @@
 ﻿using ProVoiceLedger.Core.Models;
 using SQLite;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ProVoiceLedger.Core.Services
 {
@@ -23,9 +23,10 @@ namespace ProVoiceLedger.Core.Services
             await _database.CreateTableAsync<RecordedClipInfo>();
         }
 
-        // 🔍 Get all sessions, newest first
+        // 🧭 Get all sessions, newest first
         public async Task<List<Session>> GetSessionsAsync()
         {
+            await InitializeAsync();
             return await _database
                 .Table<Session>()
                 .OrderByDescending(s => s.StartTime)
@@ -35,6 +36,7 @@ namespace ProVoiceLedger.Core.Services
         // 🎯 Get a specific session by ID
         public async Task<Session?> GetSessionAsync(int id)
         {
+            await InitializeAsync();
             return await _database
                 .Table<Session>()
                 .Where(s => s.Id == id)
@@ -44,15 +46,16 @@ namespace ProVoiceLedger.Core.Services
         // 💾 Save a session (insert or update)
         public async Task<int> SaveSessionAsync(Session session)
         {
-            if (session.Id != 0)
-                return await _database.UpdateAsync(session);
-            else
-                return await _database.InsertAsync(session);
+            await InitializeAsync();
+            return session.Id != 0
+                ? await _database.UpdateAsync(session)
+                : await _database.InsertAsync(session);
         }
 
         // 🗑️ Delete a session by ID
         public async Task<int> DeleteSessionAsync(int id)
         {
+            await InitializeAsync();
             var sessionToDelete = await GetSessionAsync(id);
             if (sessionToDelete != null)
             {
@@ -61,9 +64,10 @@ namespace ProVoiceLedger.Core.Services
             return 0;
         }
 
-        // 📆 Optional: get sessions within a date range
+        // 📆 Get sessions within a date range
         public async Task<List<Session>> GetSessionsInRangeAsync(DateTime from, DateTime to)
         {
+            await InitializeAsync();
             return await _database
                 .Table<Session>()
                 .Where(s => s.StartTime >= from && s.StartTime <= to)
@@ -74,12 +78,14 @@ namespace ProVoiceLedger.Core.Services
         // 🎙️ Save a recorded clip
         public async Task<int> SaveRecordingAsync(RecordedClipInfo clip)
         {
+            await InitializeAsync();
             return await _database.InsertAsync(clip);
         }
 
         // 🕵️ Get the most recent recording
         public async Task<RecordedClipInfo?> GetLastRecordingAsync()
         {
+            await InitializeAsync();
             return await _database
                 .Table<RecordedClipInfo>()
                 .OrderByDescending(r => r.Timestamp)
@@ -89,11 +95,29 @@ namespace ProVoiceLedger.Core.Services
         // 📁 Get recordings for a specific session
         public async Task<List<RecordedClipInfo>> GetRecordingsForSessionAsync(string sessionName)
         {
+            await InitializeAsync();
             return await _database
                 .Table<RecordedClipInfo>()
                 .Where(r => r.SessionName == sessionName)
                 .OrderByDescending(r => r.Timestamp)
                 .ToListAsync();
+        }
+
+        // 🧮 Get all recordings, newest first
+        public async Task<List<RecordedClipInfo>> GetAllRecordingsAsync()
+        {
+            await InitializeAsync();
+            return await _database
+                .Table<RecordedClipInfo>()
+                .OrderByDescending(r => r.Timestamp)
+                .ToListAsync();
+        }
+
+        // 🗑️ Delete a recording by ID
+        public async Task<int> DeleteRecordingAsync(int id)
+        {
+            await InitializeAsync();
+            return await _database.DeleteAsync<RecordedClipInfo>(id);
         }
     }
 }

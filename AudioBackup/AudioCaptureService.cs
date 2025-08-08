@@ -1,9 +1,9 @@
-﻿using NAudio.Wave;
-using ProVoiceLedger.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using NAudio.Wave;
+using ProVoiceLedger.Core.Models;
 
 namespace ProVoiceLedger.AudioBackup
 {
@@ -65,9 +65,7 @@ namespace ProVoiceLedger.AudioBackup
                 try
                 {
                     _writer?.Dispose();
-                    _writer = null;
                     _waveIn?.Dispose();
-                    _waveIn = null;
                 }
                 catch (Exception ex)
                 {
@@ -75,6 +73,8 @@ namespace ProVoiceLedger.AudioBackup
                 }
                 finally
                 {
+                    _writer = null;
+                    _waveIn = null;
                     _recordingStoppedTcs?.TrySetResult(true);
                 }
             };
@@ -103,20 +103,20 @@ namespace ProVoiceLedger.AudioBackup
 
             Console.WriteLine($"🛑 Recording stopped: {_currentFilePath} ({duration})");
 
-            return new RecordedClipInfo
-            {
-                FilePath = _currentFilePath,
-                Duration = duration,
-                SessionName = _sessionName,
-                Timestamp = timestamp,
-                Metadata = _metadata,
-                RecordedAt = timestamp,
-                DeviceUsed = "NAudio WaveInEvent"
-            };
+            return new RecordedClipInfo(
+                filePath: _currentFilePath,
+                duration: duration.TotalSeconds,
+                sessionName: _sessionName,
+                timestamp: timestamp,
+                metadata: _metadata,
+                recordedAtOverride: timestamp, // ✅ Correct name
+                deviceUsedOverride: "NAudio WaveInEvent"
+            );
         }
 
         public async Task PlayAudioAsync(string filePath)
         {
+#if WINDOWS
             if (!File.Exists(filePath))
             {
                 Console.WriteLine($"⚠️ File not found: {filePath}");
@@ -132,10 +132,15 @@ namespace ProVoiceLedger.AudioBackup
             {
                 await Task.Delay(100);
             }
+#else
+            Console.WriteLine("⚠️ Playback is only supported on Windows.");
+            await Task.CompletedTask;
+#endif
         }
 
         public Task<double> GetDurationAsync(string filePath)
         {
+#if WINDOWS
             if (!File.Exists(filePath))
             {
                 Console.WriteLine($"⚠️ File not found: {filePath}");
@@ -144,6 +149,10 @@ namespace ProVoiceLedger.AudioBackup
 
             using var reader = new AudioFileReader(filePath);
             return Task.FromResult(reader.TotalTime.TotalSeconds);
+#else
+            Console.WriteLine("⚠️ Duration check is only supported on Windows.");
+            return Task.FromResult(0.0);
+#endif
         }
 
         private static float[] ConvertToSamples(byte[] buffer, int bytesRecorded)

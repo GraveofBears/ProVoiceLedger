@@ -4,15 +4,19 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="ProVoiceLedger.App">
 
+    <!-- 🌐 Global application resources -->
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
 
-                <!-- 🎨 Your active style dictionaries -->
+                <!-- 🎨 Theme and style resources -->
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
 
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- 🧩 Add global converters, fonts, or static values here if needed -->
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>
