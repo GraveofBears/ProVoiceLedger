@@ -1,149 +1,153 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.Json;
+using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Maui.Storage;
-using ProVoiceLedger.AudioBackup;
+using ProVoiceLedger.Core.Audio;
 using ProVoiceLedger.Core.Models;
 
 namespace ProVoiceLedger.Core.Services
 {
     public class RecordingService : IRecordingService
     {
-        private readonly IAudioCaptureService _audioCapture;
-        private readonly SessionDatabase _sessionDatabase;
+        private readonly List<RecordedClipInfo> _recordings = new();
         private RecordedClipInfo? _lastClip;
+        private User? _currentUser;
 
-        public User? CurrentUser { get; private set; }
+        private readonly IAudioEngine _audioPlayer;
 
-        public RecordingService(IAudioCaptureService audioCapture, SessionDatabase sessionDatabase)
+        public RecordingService(IAudioEngine audioPlayer)
         {
-            ArgumentNullException.ThrowIfNull(audioCapture);
-            ArgumentNullException.ThrowIfNull(sessionDatabase);
-
-            _audioCapture = audioCapture;
-            _sessionDatabase = sessionDatabase;
+            _audioPlayer = audioPlayer ?? throw new ArgumentNullException(nameof(audioPlayer));
         }
 
-        // 👤 Set the current authenticated user and persist to secure storage
-        public void SetCurrentUser(User user)
-        {
-            ArgumentNullException.ThrowIfNull(user);
-            CurrentUser = user;
-
-            var json = JsonSerializer.Serialize(user);
-            SecureStorage.SetAsync("current_user", json);
-        }
-
-        public User? GetCurrentUser() => CurrentUser;
-
-        public async Task<User?> TryRestoreUserAsync()
-        {
-            try
-            {
-                var json = await SecureStorage.GetAsync("current_user");
-                if (string.IsNullOrWhiteSpace(json)) return null;
-
-                var user = JsonSerializer.Deserialize<User>(json);
-                CurrentUser = user;
-                return user;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        // 🎙️ Start a new recording session
+        // 🎙️ Recording
         public async Task StartRecordingAsync(string sessionName, Dictionary<string, string> metadata)
         {
-            if (CurrentUser is null)
-                throw new InvalidOperationException("No authenticated user set.");
+            var filePath = GenerateFilePath(sessionName);
+            await _audioPlayer.StartRecordingAsync(filePath);
 
-            metadata ??= new Dictionary<string, string>
+            _lastClip = new RecordedClipInfo
             {
-                ["username"] = CurrentUser.Username,
-                ["userId"] = CurrentUser.Id
+                FilePath = filePath,
+                Metadata = metadata,
+                StartedAt = DateTime.UtcNow
             };
-
-            var started = await _audioCapture.StartRecordingAsync(sessionName, metadata);
-            if (!started)
-                throw new InvalidOperationException("Failed to start recording.");
         }
 
-        // 🛑 Stop recording and persist the clip
         public async Task<RecordedClipInfo> StopRecordingAsync()
         {
-            var clip = await _audioCapture.StopRecordingAsync();
-            if (clip is null)
-                throw new InvalidOperationException("No recording was active.");
+            if (_lastClip == null)
+                throw new InvalidOperationException("No recording in progress.");
 
-            _lastClip = clip;
+            await _audioPlayer.StopRecordingAsync();
+
+            _lastClip.StoppedAt = DateTime.UtcNow;
+
+            // ✅ Fix: unwrap nullable DateTime before subtracting
+            if (_lastClip.StartedAt != null && _lastClip.StoppedAt != null)
+            {
+                _lastClip.Duration = (_lastClip.StoppedAt.Value - _lastClip.StartedAt.Value).TotalSeconds;
+            }
+            else
+            {
+                _lastClip.Duration = 0;
+            }
+
+            return _lastClip;
+        }
+
+        public async Task FinishRecordingAsync()
+        {
+            var clip = await StopRecordingAsync();
+            clip.Metadata["FinishedAt"] = DateTime.UtcNow.ToString("o");
             await SaveRecordingAsync(clip);
-            return clip;
         }
 
         public async Task SaveRecordingAsync(RecordedClipInfo clip)
         {
-            ArgumentNullException.ThrowIfNull(clip);
-            await _sessionDatabase.SaveRecordingAsync(clip);
+            _recordings.Add(clip);
+            _lastClip = clip;
+
+            await Task.CompletedTask; // Replace with actual persistence logic
         }
 
-        public async Task<RecordedClipInfo?> GetLastRecordingAsync()
+        // ▶️ Playback
+        public async Task PlayRecordingAsync(string filePath)
         {
-            _lastClip = await _sessionDatabase.GetLastRecordingAsync();
+            await _audioPlayer.PlayAsync(filePath);
+        }
+
+        public void PausePlayback()
+        {
+            _audioPlayer.Pause();
+        }
+
+        public void StopPlayback()
+        {
+            _audioPlayer.Stop();
+        }
+
+        public void SeekBackward(TimeSpan amount)
+        {
+            _audioPlayer.SeekRelative(-amount);
+        }
+
+        public void SeekForward(TimeSpan amount)
+        {
+            _audioPlayer.SeekRelative(amount);
+        }
+
+        public void SeekTo(TimeSpan position)
+        {
+            _audioPlayer.SeekAbsolute(position);
+        }
+
+        // 📦 Retrieval
+        public Task<RecordedClipInfo?> GetLastRecordingAsync()
+        {
+            return Task.FromResult(_lastClip);
+        }
+
+        public Task<IList<RecordedClipInfo>> GetAllRecordingsAsync()
+        {
+            return Task.FromResult<IList<RecordedClipInfo>>(_recordings);
+        }
+
+        public Task<double> GetLastRecordingDurationAsync()
+        {
+            return Task.FromResult(_lastClip?.Duration ?? 0);
+        }
+
+        public RecordedClipInfo? GetLastClipInfo()
+        {
             return _lastClip;
         }
 
-        public async Task<IList<RecordedClipInfo>> GetAllRecordingsAsync()
+        // 👤 User session
+        public void SetCurrentUser(User user)
         {
-            return await _sessionDatabase.GetAllRecordingsAsync();
+            _currentUser = user;
         }
 
-        public async Task PlayRecordingAsync(string filePath)
+        public User? GetCurrentUser()
         {
-            if (string.IsNullOrWhiteSpace(filePath))
-                throw new ArgumentException("Invalid file path.", nameof(filePath));
-
-            await _audioCapture.PlayAudioAsync(filePath);
+            return _currentUser;
         }
 
-        // ▶️ Stub: Pause playback
-        public void PausePlayback()
+        public Task<User?> TryRestoreUserAsync()
         {
-            Console.WriteLine("PausePlayback not yet implemented.");
-            // TODO: Add actual pause logic if supported
+            return Task.FromResult(_currentUser);
         }
 
-        // ⏹️ Stub: Stop playback
-        public void StopPlayback()
+        // 🔧 Helpers
+        private string GenerateFilePath(string sessionName)
         {
-            Console.WriteLine("StopPlayback not yet implemented.");
-            // TODO: Add actual stop logic if supported
+            var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
+            var fileName = $"{sessionName}_{timestamp}.wav";
+            var folder = Path.Combine(FileSystem.AppDataDirectory, "Recordings");
+
+            Directory.CreateDirectory(folder);
+            return Path.Combine(folder, fileName);
         }
-
-        // ⏪ Stub: Seek backward
-        public void SeekBackward(TimeSpan amount)
-        {
-            Console.WriteLine($"SeekBackward by {amount.TotalSeconds} seconds not yet implemented.");
-            // TODO: Add actual seek logic if supported
-        }
-
-        // ⏩ Stub: Seek forward
-        public void SeekForward(TimeSpan amount)
-        {
-            Console.WriteLine($"SeekForward by {amount.TotalSeconds} seconds not yet implemented.");
-            // TODO: Add actual seek logic if supported
-        }
-
-        public async Task<double> GetLastRecordingDurationAsync()
-        {
-            if (string.IsNullOrWhiteSpace(_lastClip?.FilePath))
-                return 0;
-
-            return await _audioCapture.GetDurationAsync(_lastClip.FilePath);
-        }
-
-        public RecordedClipInfo? GetLastClipInfo() => _lastClip;
     }
 }

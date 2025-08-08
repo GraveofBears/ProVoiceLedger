@@ -16,6 +16,7 @@ namespace ProVoiceLedger.Pages
         private readonly PlaybackController _playbackController;
         private DateTime _recordingStartTime;
         private bool _isRecording;
+        private bool _isPlaying;
 
         public RecordingPage() : this(App.RecordingService) { }
 
@@ -74,32 +75,75 @@ namespace ProVoiceLedger.Pages
             }
 
             _playbackController.Stop();
+            _isPlaying = false;
+            PlayPauseButton.Source = "play.png";
         }
 
-        private async void OnPlayButtonClicked(object sender, EventArgs e)
+        private async void OnPlayPauseClicked(object sender, EventArgs e)
         {
             try
             {
-                var clip = await _recordingService.GetLastRecordingAsync();
-                if (clip != null)
+                if (_isPlaying)
                 {
-                    _playbackController.Play(clip);
+                    _playbackController.Pause();
+                    PlayPauseButton.Source = "play.png";
+                    _isPlaying = false;
                 }
                 else
                 {
-                    await DisplayAlert("No Recording", "No recording found to play.", "OK");
+                    var clip = await _recordingService.GetLastRecordingAsync();
+                    if (clip != null)
+                    {
+                        _playbackController.Play(clip);
+                        PlayPauseButton.Source = "pause.png";
+                        _isPlaying = true;
+                    }
+                    else
+                    {
+                        await DisplayAlert("No Recording", "No recording found to play.", "OK");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Play error: {ex}");
-                await DisplayAlert("Error", "Failed to play recording.", "OK");
+                Console.WriteLine($"Play/Pause error: {ex}");
+                await DisplayAlert("Error", "Playback failed.", "OK");
             }
         }
 
-        private void OnPauseClicked(object sender, EventArgs e) => _playbackController.Pause();
-        private void OnRewindClicked(object sender, EventArgs e) => _playbackController.Rewind(TimeSpan.FromSeconds(5));
-        private void OnFastForwardClicked(object sender, EventArgs e) => _playbackController.FastForward(TimeSpan.FromSeconds(5));
+        private void OnRewindClicked(object sender, EventArgs e)
+        {
+            _playbackController.Rewind(TimeSpan.FromSeconds(5));
+        }
+
+        private void OnFastForwardClicked(object sender, EventArgs e)
+        {
+            _playbackController.FastForward(TimeSpan.FromSeconds(5));
+        }
+
+        private void OnSeekStartClicked(object sender, EventArgs e)
+        {
+            _playbackController.SeekBackward(TimeSpan.FromHours(1)); // Simulate jump to start
+        }
+
+        private void OnSeekEndClicked(object sender, EventArgs e)
+        {
+            _playbackController.SeekForward(TimeSpan.FromHours(1)); // Simulate jump to end
+        }
+
+        private async void OnFinishButtonClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                await _recordingService.FinishRecordingAsync(); // Replace with your actual finalization logic
+                await DisplayAlert("Finished", "Session finalized.", "OK");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"FinishRecordingAsync error: {ex}");
+                await DisplayAlert("Error", "Failed to finalize session.", "OK");
+            }
+        }
 
         private void OnPlaybackProgressUpdated(TimeSpan elapsed)
         {

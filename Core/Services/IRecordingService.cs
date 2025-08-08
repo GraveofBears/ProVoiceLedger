@@ -10,6 +10,7 @@ namespace ProVoiceLedger.Core.Services
         // 🎙️ Recording
         Task StartRecordingAsync(string sessionName, Dictionary<string, string> metadata);
         Task<RecordedClipInfo> StopRecordingAsync();
+        Task FinishRecordingAsync(); // ✅ Add this line
         Task SaveRecordingAsync(RecordedClipInfo clip);
 
         // ▶️ Playback
@@ -18,6 +19,7 @@ namespace ProVoiceLedger.Core.Services
         void StopPlayback();
         void SeekBackward(TimeSpan amount);
         void SeekForward(TimeSpan amount);
+        void SeekTo(TimeSpan position);
 
         // 📦 Retrieval
         Task<RecordedClipInfo?> GetLastRecordingAsync();

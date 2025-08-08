@@ -9,8 +9,8 @@
 
         <!-- 🎙️ Record Button -->
         <ImageButton Source="record.png"
-                     WidthRequest="80"
-                     HeightRequest="80"
+                     WidthRequest="100"
+                     HeightRequest="100"
                      BackgroundColor="Transparent"
                      Clicked="OnRecordButtonClicked"/>
 
@@ -20,7 +20,7 @@
                      HeightRequest="6"
                      Progress="0"
                      BackgroundColor="Transparent"
-                     ProgressColor="cyan"
+                     ProgressColor="OrangeRed"
                      HorizontalOptions="Center" />
 
         <!-- ⏱️ Timestamp Label -->
@@ -31,38 +31,54 @@
                HorizontalOptions="Center" />
 
         <!-- ▶️ Playback Controls -->
-        <HorizontalStackLayout Spacing="20" HorizontalOptions="Center">
+        <HorizontalStackLayout Spacing="16" HorizontalOptions="Center">
+
+            <ImageButton Source="seekstart.png"
+                         WidthRequest="40"
+                         HeightRequest="40"
+                         BackgroundColor="Transparent"
+                         Clicked="OnSeekStartClicked"/>
+
             <ImageButton Source="rewind.png"
-                         WidthRequest="50"
-                         HeightRequest="50"
+                         WidthRequest="40"
+                         HeightRequest="40"
                          BackgroundColor="Transparent"
                          Clicked="OnRewindClicked"/>
 
-            <ImageButton Source="play.png"
-                         WidthRequest="60"
-                         HeightRequest="60"
+            <ImageButton x:Name="PlayPauseButton"
+                         Source="play.png"
+                         WidthRequest="40"
+                         HeightRequest="40"
                          BackgroundColor="Transparent"
-                         Clicked="OnPlayButtonClicked"/>
+                         Clicked="OnPlayPauseClicked"/>
 
-            <ImageButton Source="pause.png"
-                         WidthRequest="50"
-                         HeightRequest="50"
+            <ImageButton Source="stop.png"
+                         WidthRequest="40"
+                         HeightRequest="40"
                          BackgroundColor="Transparent"
-                         Clicked="OnPauseClicked"/>
+                         Clicked="OnStopButtonClicked"/>
 
-            <ImageButton Source="fast_forward.png"
-                         WidthRequest="50"
-                         HeightRequest="50"
+            <ImageButton Source="fastforward.png"
+                         WidthRequest="40"
+                         HeightRequest="40"
                          BackgroundColor="Transparent"
                          Clicked="OnFastForwardClicked"/>
+
+            <ImageButton Source="seekend.png"
+                         WidthRequest="40"
+                         HeightRequest="40"
+                         BackgroundColor="Transparent"
+                         Clicked="OnSeekEndClicked"/>
+
         </HorizontalStackLayout>
 
-        <!-- 🛑 Stop Button -->
+        <!-- ✅ Finish Button -->
         <ImageButton Source="finish.png"
                      WidthRequest="60"
                      HeightRequest="60"
                      BackgroundColor="Transparent"
-                     Clicked="OnStopButtonClicked"/>
+                     Clicked="OnFinishButtonClicked"
+                     HorizontalOptions="Center" />
 
         <!-- ⚙️ Settings -->
         <ImageButton Source="settings.png"

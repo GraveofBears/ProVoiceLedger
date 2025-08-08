@@ -7,6 +7,7 @@ using System.IO;
 using ProVoiceLedger.AudioBackup;
 using ProVoiceLedger.Core.Models;
 using ProVoiceLedger.Core.Services;
+using ProVoiceLedger.Core.Audio;
 using ProVoiceLedger.Pages;
 
 namespace ProVoiceLedger;
@@ -34,6 +35,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<PipeServerService>();
 
         // 🎙️ Audio and recording services
+        builder.Services.AddSingleton<IAudioEngine, MockAudioEngine>(); // ✅ Register audio engine
         builder.Services.AddSingleton<IAudioCaptureService, AudioCaptureService>();
         builder.Services.AddSingleton<IRecordingService, RecordingService>();
         builder.Services.AddSingleton<IAudioPlaybackService, AudioPlaybackService>();

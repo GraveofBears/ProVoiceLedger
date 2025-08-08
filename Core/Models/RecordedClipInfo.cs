@@ -11,19 +11,19 @@ namespace ProVoiceLedger.Core.Models
         public int Id { get; set; }
 
         /// <summary>📁 Path to the saved audio file</summary>
-        public string FilePath { get; set; }
+        public string FilePath { get; set; } = string.Empty;
 
         /// <summary>🕒 UTC timestamp when recording was saved</summary>
         public DateTime Timestamp { get; set; }
 
         /// <summary>🧭 Session name this recording belongs to</summary>
-        public string SessionName { get; set; }
+        public string SessionName { get; set; } = string.Empty;
 
         /// <summary>⏱️ Duration in seconds</summary>
         public double Duration { get; set; }
 
         /// <summary>🧠 Serialized metadata (e.g., device, tags)</summary>
-        public string MetadataJson { get; set; }
+        public string MetadataJson { get; set; } = "{}";
 
         /// <summary>🧩 Deserialized metadata dictionary</summary>
         [Ignore]
@@ -52,6 +52,12 @@ namespace ProVoiceLedger.Core.Models
                 ? DeviceUsedOverride
                 : Metadata.TryGetValue("Device", out var device) ? device : "Unknown";
 
+        /// <summary>🕓 Optional start time of recording</summary>
+        public DateTime? StartedAt { get; set; }
+
+        /// <summary>🕔 Optional stop time of recording</summary>
+        public DateTime? StoppedAt { get; set; }
+
         public RecordedClipInfo() { }
 
         public RecordedClipInfo(
@@ -61,7 +67,9 @@ namespace ProVoiceLedger.Core.Models
             DateTime timestamp,
             Dictionary<string, string>? metadata = null,
             DateTime? recordedAtOverride = null,
-            string? deviceUsedOverride = null)
+            string? deviceUsedOverride = null,
+            DateTime? startedAt = null,
+            DateTime? stoppedAt = null)
         {
             FilePath = filePath;
             Duration = duration;
@@ -70,6 +78,8 @@ namespace ProVoiceLedger.Core.Models
             Metadata = metadata ?? new();
             RecordedAtOverride = recordedAtOverride;
             DeviceUsedOverride = deviceUsedOverride;
+            StartedAt = startedAt;
+            StoppedAt = stoppedAt;
         }
     }
 }
