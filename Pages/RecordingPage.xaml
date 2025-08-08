@@ -9,8 +9,8 @@
 
         <!-- 🎙️ Record Button -->
         <ImageButton Source="record.png"
-                     WidthRequest="100"
-                     HeightRequest="100"
+                     WidthRequest="200"
+                     HeightRequest="200"
                      BackgroundColor="Transparent"
                      Clicked="OnRecordButtonClicked"/>
 
@@ -80,13 +80,13 @@
                      Clicked="OnFinishButtonClicked"
                      HorizontalOptions="Center" />
 
-        <!-- ⚙️ Settings -->
+        <!-- ⚙️ Settings 
         <ImageButton Source="settings.png"
                      WidthRequest="40"
                      HeightRequest="40"
                      BackgroundColor="Transparent"
                      Clicked="OnSettingsClicked"
-                     HorizontalOptions="End" />
+                     HorizontalOptions="End" /> -->
 
     </VerticalStackLayout>
 </ContentPage>
