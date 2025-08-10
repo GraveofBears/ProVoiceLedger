@@ -2,8 +2,19 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ProVoiceLedger.Pages.RecordingListPage"
-             BackgroundColor="White"
+             BackgroundColor="Black"
              Title="Recordings">
+
+    <ContentPage.Background>
+        <LinearGradientBrush EndPoint="1,1">
+            <GradientStop Color="#0a0a2f" Offset="0.0" />
+            <!-- Deep Navy -->
+            <GradientStop Color="#2a005f" Offset="0.5" />
+            <!-- Dark Violet -->
+            <GradientStop Color="#000020" Offset="1.0" />
+            <!-- Near Black -->
+        </LinearGradientBrush>
+    </ContentPage.Background>
 
     <Grid RowSpacing="0" ColumnSpacing="0" Padding="20">
         <Grid.RowDefinitions>
@@ -15,7 +26,7 @@
         <Label Text="Your Recordings"
                FontSize="24"
                FontAttributes="Bold"
-               TextColor="Black"
+               TextColor="AntiqueWhite"
                HorizontalOptions="Center"
                Margin="0,20,0,10"
                Grid.Row="0" />
@@ -28,7 +39,7 @@
                 <DataTemplate>
                     <Frame Padding="12"
                            Margin="0,6"
-                           BackgroundColor="#F5F5F5"
+                           BackgroundColor="Transparent"
                            HasShadow="False"
                            CornerRadius="8">
                         <Grid>
@@ -42,14 +53,14 @@
                                 <Label Text="{Binding Title}"
                                        FontSize="18"
                                        FontAttributes="Bold"
-                                       TextColor="Black" />
+                                       TextColor="AntiqueWhite" />
                                 <Label Text="{Binding Timestamp}"
                                        FontSize="14"
-                                       TextColor="Gray" />
+                                       TextColor="AntiqueWhite" />
                             </VerticalStackLayout>
 
                             <!-- ▶️ Play Button -->
-                            <ImageButton Source="playicon.png"
+                            <ImageButton Source="play.png"
                                          WidthRequest="32"
                                          HeightRequest="32"
                                          BackgroundColor="Transparent"

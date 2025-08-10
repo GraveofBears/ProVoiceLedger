@@ -7,6 +7,17 @@
     BackgroundColor="Black"
     Padding="20">
 
+    <ContentPage.Background>
+        <LinearGradientBrush EndPoint="1,1">
+            <GradientStop Color="#0a0a2f" Offset="0.0" />
+            <!-- Deep Navy -->
+            <GradientStop Color="#2a005f" Offset="0.5" />
+            <!-- Dark Violet -->
+            <GradientStop Color="#000020" Offset="1.0" />
+            <!-- Near Black -->
+        </LinearGradientBrush>
+    </ContentPage.Background>
+
     <ContentPage.Resources>
         <Style TargetType="Label">
             <Setter Property="TextColor" Value="White"/>

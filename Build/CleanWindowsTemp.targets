@@ -1,0 +1,18 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- ✅ Only run on Windows builds -->
+  <PropertyGroup>
+    <_IsWindowsBuild Condition="'$(TargetFramework)' == 'net8.0-windows'">true</_IsWindowsBuild>
+  </PropertyGroup>
+
+  <Target Name="CleanWindowsTemp" AfterTargets="Clean" Condition="'$(_IsWindowsBuild)' == 'true'">
+    <Message Text="🧹 Cleaning Windows temp folders..." Importance="High" />
+
+    <!-- Example: Delete a temp folder in AppData -->
+    <RemoveDir Directories="$(LocalAppData)\ProVoiceLedger\Temp" Condition="Exists('$(LocalAppData)\ProVoiceLedger\Temp')" />
+
+    <!-- Example: Clear a custom logs folder -->
+    <RemoveDir Directories="$(ProjectDir)Logs\Temp" Condition="Exists('$(ProjectDir)Logs\Temp')" />
+  </Target>
+
+</Project>

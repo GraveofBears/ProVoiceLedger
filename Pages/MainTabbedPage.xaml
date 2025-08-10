@@ -3,14 +3,14 @@
             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
             xmlns:pages="clr-namespace:ProVoiceLedger.Pages"
             x:Class="ProVoiceLedger.Pages.MainTabbedPage"
-            BarBackgroundColor="White"
-            BarTextColor="Black"
-            SelectedTabColor="#D32F2F"
+            BarBackgroundColor="#0a0a2f"
+            BarTextColor="WhiteSmoke"
+            SelectedTabColor="AntiqueWhite"
             UnselectedTabColor="Gray"
             Title="ProVoice">
 
     <pages:RecordingPage Title="Record" IconImageSource="mic.png" />
-	<pages:RecordingListPage Title="Archive" IconImageSource="list.png" />
-	<pages:SettingsPage Title="Settings" IconImageSource="settings.png" />
+    <pages:RecordingListPage Title="Archive" IconImageSource="list.png" />
+    <pages:SettingsPage Title="Settings" IconImageSource="settings.png" />
 
 </TabbedPage>

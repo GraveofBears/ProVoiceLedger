@@ -10,64 +10,67 @@ using ProVoiceLedger.Core.Services;
 using ProVoiceLedger.Core.Audio;
 using ProVoiceLedger.Pages;
 
-namespace ProVoiceLedger;
-
-public static class MauiProgram
+namespace ProVoiceLedger
 {
-    public static MauiApp CreateMauiApp()
+    public static class MauiProgram
     {
-        var builder = MauiApp.CreateBuilder();
-
-        builder
-            .UseMauiApp<App>() // App.xaml.cs handles splash and navigation
-            .ConfigureFonts(fonts =>
-            {
-                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-            })
-            .UseSkiaSharp(); // ✅ SkiaSharp support for waveform rendering, etc.
-
-        // 🔧 Core services
-        builder.Services.AddSingleton<UserRepository>();
-        builder.Services.AddSingleton<AuthService>();
-        builder.Services.AddSingleton<FileStorageService>();
-        builder.Services.AddSingleton<CommunicationService>();
-        builder.Services.AddSingleton<PipeServerService>();
-
-        // 🎙️ Audio and recording services
-        builder.Services.AddSingleton<IAudioEngine, MockAudioEngine>(); // ✅ Register audio engine
-        builder.Services.AddSingleton<IAudioCaptureService, AudioCaptureService>();
-        builder.Services.AddSingleton<IRecordingService, RecordingService>();
-        builder.Services.AddSingleton<IAudioPlaybackService, AudioPlaybackService>();
-        builder.Services.AddSingleton<RecordingUploadService>();
-
-        // 🗂️ SQLite session database
-        string dbPath = Path.Combine(FileSystem.AppDataDirectory, "sessions.db");
-        builder.Services.AddSingleton(provider => new SessionDatabase(dbPath));
-
-        // 📄 Pages (transient for fresh state)
-        builder.Services.AddTransient<RecordingPage>();
-        builder.Services.AddTransient<RecordingListPage>();
-        builder.Services.AddTransient<LoginPage>();
-        builder.Services.AddTransient<SessionHistoryPage>();
-        builder.Services.AddTransient<SplashPage>();
-        builder.Services.AddTransient<SettingsPage>();
-        builder.Services.AddTransient<MainTabbedPage>();
-
-        // 🛠️ App entry point with injected services
-        builder.Services.AddSingleton<App>(provider =>
+        public static MauiApp CreateMauiApp()
         {
-            var db = provider.GetRequiredService<SessionDatabase>();
-            var audioService = provider.GetRequiredService<IAudioCaptureService>();
-            return new App(db, audioService);
-        });
+            var builder = MauiApp.CreateBuilder();
 
-        var app = builder.Build();
+            builder
+                .UseMauiApp<App>() // App.xaml.cs handles splash and navigation
+                .ConfigureFonts(fonts =>
+                {
+                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                    fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                })
+                .UseSkiaSharp(); // ✅ SkiaSharp support for waveform rendering
 
-        // 🚀 Start background pipe listener
-        var pipeServer = app.Services.GetRequiredService<PipeServerService>();
-        Task.Run(() => pipeServer.StartListenerAsync());
+            // 🔧 Core services
+            builder.Services.AddSingleton<UserRepository>();
+            builder.Services.AddSingleton<AuthService>();
+            builder.Services.AddSingleton<FileStorageService>();
+            builder.Services.AddSingleton<CommunicationService>();
+            builder.Services.AddSingleton<PipeServerService>();
 
-        return app;
+            // 🎙️ Audio and recording services
+            builder.Services.AddSingleton<IAudioEngine, MockAudioEngine>();
+            builder.Services.AddSingleton<IAudioCaptureService, AudioCaptureService>();
+            builder.Services.AddSingleton<IAudioPlaybackService, AudioPlaybackService>();
+
+            // 🗂️ SQLite session database
+            string dbPath = Path.Combine(FileSystem.AppDataDirectory, "sessions.db");
+            builder.Services.AddSingleton(provider => new SessionDatabase(dbPath));
+
+            // 🎛️ Recording service with injected audio capture
+            builder.Services.AddSingleton<IRecordingService>(provider =>
+            {
+                var audioCapture = provider.GetRequiredService<IAudioCaptureService>();
+                return new RecordingService(audioCapture);
+            });
+
+            builder.Services.AddSingleton<RecordingUploadService>();
+
+            // 📄 Pages (transient for fresh state)
+            builder.Services.AddTransient<RecordingPage>();
+            builder.Services.AddTransient<RecordingListPage>();
+            builder.Services.AddTransient<LoginPage>();
+            builder.Services.AddTransient<SessionHistoryPage>();
+            builder.Services.AddTransient<SplashPage>();
+            builder.Services.AddTransient<SettingsPage>();
+            builder.Services.AddTransient<MainTabbedPage>();
+
+            // 🛠️ App entry point with injected services
+            builder.Services.AddSingleton<App>(provider => new App(provider));
+
+            var app = builder.Build();
+
+            // 🚀 Start background pipe listener
+            var pipeServer = app.Services.GetRequiredService<PipeServerService>();
+            Task.Run(() => pipeServer.StartListenerAsync());
+
+            return app;
+        }
     }
 }

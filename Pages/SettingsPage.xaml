@@ -4,31 +4,43 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     Title="Settings"
-    BackgroundColor="#FAFAFA">
+    BackgroundColor="Black">
 
-	<VerticalStackLayout Padding="24" Spacing="20">
+    <ContentPage.Background>
+        <LinearGradientBrush EndPoint="1,1">
+            <GradientStop Color="#0a0a2f" Offset="0.0" />
+            <!-- Deep Navy -->
+            <GradientStop Color="#2a005f" Offset="0.5" />
+            <!-- Dark Violet -->
+            <GradientStop Color="#000020" Offset="1.0" />
+            <!-- Near Black -->
+        </LinearGradientBrush>
+    </ContentPage.Background>
+
+    <VerticalStackLayout Padding="24" Spacing="20">
 
 		<!-- 🧭 Header -->
 		<Label Text="Settings"
                FontSize="24"
                FontAttributes="Bold"
-               TextColor="#333"
+               TextColor="AntiqueWhite"
                HorizontalOptions="Center" />
 
 		<!-- 🔓 Logout Button -->
 		<Button Text="Log Out"
                 Clicked="OnLogoutClicked"
-                BackgroundColor="#E53935"
+                BackgroundColor="#2a005f"
                 TextColor="White"
                 CornerRadius="8"
                 FontAttributes="Bold"
                 HeightRequest="48"
+                WidthRequest="180"               
                 HorizontalOptions="Fill" />
 
 		<!-- 📦 App Version Display -->
 		<Label Text="{Binding AppVersion}"
                FontSize="14"
-               TextColor="#666"
+               TextColor="AntiqueWhite"
                HorizontalOptions="Center" />
 
 		<!-- 🧪 Optional: Add more settings here -->

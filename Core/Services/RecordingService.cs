@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using ProVoiceLedger.Core.Audio;
 using ProVoiceLedger.Core.Models;
+using ProVoiceLedger.AudioBackup;
 
 namespace ProVoiceLedger.Core.Services
 {
@@ -13,22 +14,23 @@ namespace ProVoiceLedger.Core.Services
         private RecordedClipInfo? _lastClip;
         private User? _currentUser;
 
-        private readonly IAudioEngine _audioPlayer;
+        public IAudioCaptureService AudioCapture { get; }
 
-        public RecordingService(IAudioEngine audioPlayer)
+        public RecordingService(IAudioCaptureService audioCapture)
         {
-            _audioPlayer = audioPlayer ?? throw new ArgumentNullException(nameof(audioPlayer));
+            AudioCapture = audioCapture ?? throw new ArgumentNullException(nameof(audioCapture));
         }
 
         // 🎙️ Recording
         public async Task StartRecordingAsync(string sessionName, Dictionary<string, string> metadata)
         {
-            var filePath = GenerateFilePath(sessionName);
-            await _audioPlayer.StartRecordingAsync(filePath);
+            bool started = await AudioCapture.StartRecordingAsync(sessionName, metadata);
+            if (!started)
+                throw new InvalidOperationException("Recording could not be started.");
 
             _lastClip = new RecordedClipInfo
             {
-                FilePath = filePath,
+                SessionName = sessionName,
                 Metadata = metadata,
                 StartedAt = DateTime.UtcNow
             };
@@ -39,19 +41,15 @@ namespace ProVoiceLedger.Core.Services
             if (_lastClip == null)
                 throw new InvalidOperationException("No recording in progress.");
 
-            await _audioPlayer.StopRecordingAsync();
+            var clip = await AudioCapture.StopRecordingAsync();
+            if (clip == null)
+                throw new InvalidOperationException("Recording failed to stop properly.");
 
-            _lastClip.StoppedAt = DateTime.UtcNow;
-
-            // ✅ Fix: unwrap nullable DateTime before subtracting
-            if (_lastClip.StartedAt != null && _lastClip.StoppedAt != null)
-            {
-                _lastClip.Duration = (_lastClip.StoppedAt.Value - _lastClip.StartedAt.Value).TotalSeconds;
-            }
-            else
-            {
-                _lastClip.Duration = 0;
-            }
+            _lastClip.FilePath = clip.FilePath;
+            _lastClip.StoppedAt = clip.Timestamp;
+            _lastClip.Duration = clip.Duration;
+            _lastClip.DeviceUsedOverride = clip.DeviceUsedOverride;
+            _lastClip.RecordedAtOverride = clip.RecordedAtOverride;
 
             return _lastClip;
         }
@@ -74,32 +72,32 @@ namespace ProVoiceLedger.Core.Services
         // ▶️ Playback
         public async Task PlayRecordingAsync(string filePath)
         {
-            await _audioPlayer.PlayAsync(filePath);
+            await AudioCapture.PlayAudioAsync(filePath);
         }
 
         public void PausePlayback()
         {
-            _audioPlayer.Pause();
+            // Optional: implement if your audio engine supports it
         }
 
         public void StopPlayback()
         {
-            _audioPlayer.Stop();
+            // Optional: implement if your audio engine supports it
         }
 
         public void SeekBackward(TimeSpan amount)
         {
-            _audioPlayer.SeekRelative(-amount);
+            // Optional: implement if your audio engine supports it
         }
 
         public void SeekForward(TimeSpan amount)
         {
-            _audioPlayer.SeekRelative(amount);
+            // Optional: implement if your audio engine supports it
         }
 
         public void SeekTo(TimeSpan position)
         {
-            _audioPlayer.SeekAbsolute(position);
+            // Optional: implement if your audio engine supports it
         }
 
         // 📦 Retrieval
@@ -137,17 +135,6 @@ namespace ProVoiceLedger.Core.Services
         public Task<User?> TryRestoreUserAsync()
         {
             return Task.FromResult(_currentUser);
-        }
-
-        // 🔧 Helpers
-        private string GenerateFilePath(string sessionName)
-        {
-            var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
-            var fileName = $"{sessionName}_{timestamp}.wav";
-            var folder = Path.Combine(FileSystem.AppDataDirectory, "Recordings");
-
-            Directory.CreateDirectory(folder);
-            return Path.Combine(folder, fileName);
         }
     }
 }

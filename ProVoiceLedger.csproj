@@ -65,6 +65,12 @@
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="Pages\GradientPage.xaml.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <MauiXaml Remove="Pages\GradientPage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
     <None Remove="App.xaml~RF1605234c.TMP" />
   </ItemGroup>
 
@@ -84,5 +90,10 @@
     <MauiXaml Update="Pages\MainPage.xaml" />
     <MauiXaml Update="Pages\RecordingPage.xaml" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Build\" />
+  </ItemGroup>
+	<Import Project="Build/CleanAndroidIntermediate.targets" />
+	<Import Project="Build/CleanWindowsTemp.targets" />
 
 </Project>

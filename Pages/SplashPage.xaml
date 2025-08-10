@@ -2,7 +2,18 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ProVoiceLedger.Pages.SplashPage"
-             BackgroundColor="White">
+             BackgroundColor="Black">
+    
+    <ContentPage.Background>
+        <LinearGradientBrush EndPoint="1,1">
+            <GradientStop Color="#0a0a2f" Offset="0.0" />
+            <!-- Deep Navy -->
+            <GradientStop Color="#2a005f" Offset="0.5" />
+            <!-- Dark Violet -->
+            <GradientStop Color="#000020" Offset="1.0" />
+            <!-- Near Black -->
+        </LinearGradientBrush>
+    </ContentPage.Background>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -12,7 +23,7 @@
 
         <!-- 🌒 Logo Image -->
         <Image x:Name="LogoImage"
-               Source="logoimage.png"
+               Source="logoimage_clean.png"
                HorizontalOptions="Center"
                VerticalOptions="Center"
                WidthRequest="160"
@@ -22,7 +33,7 @@
         <!-- 🔢 App Version -->
         <Label Text="{Binding AppVersion}"
                FontSize="14"
-               TextColor="DarkBlue"
+               TextColor="AntiqueWhite"
                HorizontalOptions="Center"
                VerticalOptions="End"
                Margin="0,0,0,20"

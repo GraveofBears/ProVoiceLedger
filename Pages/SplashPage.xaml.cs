@@ -1,19 +1,19 @@
 ﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Storage;
-using ProVoiceLedger.Core.Models;
-using ProVoiceLedger.Core.Services;
-using System;
 using System.Threading.Tasks;
+using System.Reflection;
 
 namespace ProVoiceLedger.Pages
 {
     public partial class SplashPage : ContentPage
     {
-        public string AppVersion => $"v{AppInfo.VersionString}";
+        public string AppVersion { get; set; }
 
         public SplashPage()
         {
             InitializeComponent();
+
+            // Bind version label
+            AppVersion = $"v{Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0"}";
             BindingContext = this;
         }
 
@@ -21,54 +21,16 @@ namespace ProVoiceLedger.Pages
         {
             base.OnAppearing();
 
-            await AnimateLogoIntro();
-            await Task.Delay(1000);
-
-            var recordingService = App.RecordingService;
-            User? restoredUser = null;
-
-            // 🔧 Cast to concrete type to access internal methods
-            if (recordingService is RecordingService concrete)
-            {
-                try
-                {
-                    restoredUser = await concrete.TryRestoreUserAsync();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"⚠️ User restoration failed: {ex.Message}");
-                }
-
-                if (restoredUser != null)
-                {
-                    concrete.SetCurrentUser(restoredUser);
-                    NavigateTo(new RecordingPage(concrete));
-                    return;
-                }
-            }
-
-            NavigateTo(new LoginPage());
-        }
-
-        private void NavigateTo(Page destination)
-        {
-            Application.Current?.Dispatcher.Dispatch(() =>
-            {
-                Application.Current.MainPage = new NavigationPage(destination);
-            });
-        }
-
-        private async Task AnimateLogoIntro()
-        {
-            if (LogoImage == null) return;
-
+            // 🌒 Logo spectral pulse animation
             LogoImage.Opacity = 0;
-            LogoImage.Scale = 0.5;
+            await LogoImage.FadeTo(1, 1200, Easing.CubicInOut); // Fade in
 
-            await LogoImage.FadeTo(1, 600, Easing.CubicInOut);
-            await LogoImage.ScaleTo(1.0, 600, Easing.CubicInOut);
-            await LogoImage.ScaleTo(1.05, 120, Easing.SinOut);
-            await LogoImage.ScaleTo(1.0, 120, Easing.SinIn);
+            // Optional: ambient audio trigger or glow overlay here
+
+            await Task.Delay(400); // Let animation settle
+
+            // 🎯 Navigate to login page
+            await Navigation.PushAsync(new LoginPage());
         }
     }
 }

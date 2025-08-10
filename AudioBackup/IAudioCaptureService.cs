@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using ProVoiceLedger.Core.Models;
 
@@ -28,7 +29,8 @@ namespace ProVoiceLedger.AudioBackup
         /// Plays back a recorded audio file.
         /// </summary>
         /// <param name="filePath">The full path to the audio file.</param>
-        Task PlayAudioAsync(string filePath);
+        /// <param name="cancellationToken">Optional cancellation token to stop playback.</param>
+        Task PlayAudioAsync(string filePath, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets the duration of a recorded audio file in seconds.
@@ -46,5 +48,10 @@ namespace ProVoiceLedger.AudioBackup
         /// Emits waveform samples during recording, as a float array.
         /// </summary>
         event Action<float[]>? OnAudioSampleCaptured;
+
+        /// <summary>
+        /// Emits real-time amplitude values for visual feedback.
+        /// </summary>
+        event Action<float>? OnAmplitude;
     }
 }

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ProVoiceLedger.Pages.RecordingPage"
+             BackgroundColor="Black"
+             Padding="30">
+
+    <!-- 🌌 Gradient Background -->
+    <ContentPage.Background>
+        <LinearGradientBrush EndPoint="1,1">
+            <GradientStop Color="#0a0a2f" Offset="0.0" />
+            <GradientStop Color="#2a005f" Offset="0.5" />
+            <GradientStop Color="#000020" Offset="1.0" />
+        </LinearGradientBrush>
+    </ContentPage.Background>
+
+    <!-- 🧩 Main Layout -->
+    <VerticalStackLayout Spacing="30"
+                         HorizontalOptions="Center"
+                         VerticalOptions="Center">
+
+        <!-- 🌀 Arc Visualizer + 🎤 Mic Button -->
+        <Grid WidthRequest="320"
+              HeightRequest="320"
+              HorizontalOptions="Center"
+              VerticalOptions="Center">
+
+            <!-- Arc Visualizer -->
+            <GraphicsView x:Name="VisualizerCanvas"
+                          WidthRequest="250"
+                          HeightRequest="250"
+                          BackgroundColor="Transparent" />
+
+            <!-- Mic Button (Crossfade) -->
+            <Grid x:Name="MicImageContainer"
+                  WidthRequest="185"
+                  HeightRequest="185"
+                  HorizontalOptions="Center"
+                  VerticalOptions="Center">
+
+                <!-- Base Image -->
+                <Image x:Name="MicImageBase"
+                       Source="mic_purple.png"
+                       Aspect="AspectFit"
+                       WidthRequest="185"
+                       HeightRequest="185"
+                       Opacity="1.0" />
+
+                <!-- Overlay Image -->
+                <Image x:Name="MicImageOverlay"
+                       Source="mic_purple.png"
+                       Aspect="AspectFit"
+                       WidthRequest="185"
+                       HeightRequest="185"
+                       Opacity="0.0">
+                    <Image.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnRecordButtonClicked" />
+                    </Image.GestureRecognizers>
+                </Image>
+            </Grid>
+        </Grid>
+
+        <!-- 📈 Waveform Line + Timestamps -->
+        <Grid WidthRequest="320"
+              HeightRequest="60"
+              HorizontalOptions="Center"
+              ColumnDefinitions="Auto,*,Auto"
+              RowDefinitions="Auto">
+
+            <!-- ⏱️ Current Time -->
+            <Label x:Name="TimestampLeft"
+                   Text="00:00"
+                   FontSize="14"
+                   TextColor="White"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Start"
+                   Margin="0,0,10,0"
+                   Grid.Column="0" />
+
+            <!-- 📈 Waveform Line -->
+            <GraphicsView x:Name="WaveformLineCanvas"
+                          HeightRequest="40"
+                          BackgroundColor="Transparent"
+                          Grid.Column="1" />
+
+            <!-- ⏱️ Total Duration -->
+            <Label x:Name="TimestampRight"
+                   Text="∞"
+                   FontSize="14"
+                   TextColor="White"
+                   VerticalOptions="Center"
+                   HorizontalOptions="End"
+                   Margin="10,0,0,0"
+                   Grid.Column="2" />
+        </Grid>
+
+        <!-- ▶️ Playback Controls -->
+        <HorizontalStackLayout Spacing="16"
+                               HorizontalOptions="Center"
+                               Margin="0,10,0,0">
+
+            <ImageButton Source="rewind_cr.png"
+                         WidthRequest="60"
+                         HeightRequest="60"
+                         BackgroundColor="Transparent"
+                         Clicked="OnRewindClicked" />
+
+            <Image x:Name="PlayPauseImage"
+                   Source="play_cr.png"
+                   WidthRequest="100"
+                   HeightRequest="100"
+                   Aspect="AspectFit"
+                   BackgroundColor="Transparent">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnPlayPauseButtonClicked" />
+                </Image.GestureRecognizers>
+            </Image>
+
+            <ImageButton Source="fastfoward_cr.png"
+                         WidthRequest="60"
+                         HeightRequest="60"
+                         BackgroundColor="Transparent"
+                         Clicked="OnFastForwardClicked" />
+        </HorizontalStackLayout>
+    </VerticalStackLayout>
+</ContentPage>

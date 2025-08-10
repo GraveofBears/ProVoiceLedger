@@ -3,7 +3,6 @@ using Android.Media;
 using Microsoft.Maui.Storage;
 using ProVoiceLedger.AudioBackup;
 using ProVoiceLedger.Core.Models;
-using ProVoiceLedger.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace ProVoiceLedger.Platforms.Android
 {
+    /// <summary>
+    /// Android implementation of IAudioCaptureService using AudioRecord and MediaPlayer.
+    /// </summary>
     public class AndroidAudioCaptureService : IAudioCaptureService
     {
         private AudioRecord? _audioRecord;
@@ -25,7 +27,9 @@ namespace ProVoiceLedger.Platforms.Android
         private Dictionary<string, string>? _metadata;
 
         public bool IsRecording => _isRecording;
+
         public event Action<float[]>? OnAudioSampleCaptured;
+        public event Action<float>? OnAmplitude;
 
         private const int SampleRate = 44100;
         private const int BufferSize = 2048;
@@ -85,25 +89,26 @@ namespace ProVoiceLedger.Platforms.Android
             var duration = DateTime.UtcNow - _startTime;
 
             return new RecordedClipInfo(
-               // filePath: _wavFilePath,
-               // duration: duration.TotalSeconds,
-              //  sessionName: _sessionName ?? "Untitled",
-              //  recordedAt: DateTime.UtcNow,
-               // deviceUsed: "Android Mic",
-               // metadata: _metadata
+                filePath: _wavFilePath,
+                duration: duration.TotalSeconds,
+                sessionName: _sessionName ?? "Untitled",
+                timestamp: DateTime.UtcNow,
+                metadata: _metadata,
+                recordedAtOverride: DateTime.UtcNow,
+                deviceUsedOverride: "Android Mic"
             );
         }
 
-        public async Task PlayAudioAsync(string filePath)
+        public async Task PlayAudioAsync(string filePath, CancellationToken cancellationToken = default)
         {
             var mediaPlayer = new MediaPlayer();
             mediaPlayer.SetDataSource(filePath);
             mediaPlayer.Prepare();
             mediaPlayer.Start();
 
-            while (mediaPlayer.IsPlaying)
+            while (mediaPlayer.IsPlaying && !cancellationToken.IsCancellationRequested)
             {
-                await Task.Delay(100);
+                await Task.Delay(100, cancellationToken);
             }
 
             mediaPlayer.Release();
@@ -138,7 +143,19 @@ namespace ProVoiceLedger.Platforms.Android
                 }
 
                 OnAudioSampleCaptured?.Invoke(samples);
+
+                float amplitude = CalculateRMS(samples);
+                OnAmplitude?.Invoke(amplitude);
             }
+        }
+
+        private static float CalculateRMS(float[] samples)
+        {
+            if (samples.Length == 0) return 0;
+            double sum = 0;
+            foreach (var s in samples)
+                sum += s * s;
+            return (float)Math.Sqrt(sum / samples.Length);
         }
 
         private static void ConvertPcmToWav(string pcmPath, string wavPath, int sampleRate = SampleRate)

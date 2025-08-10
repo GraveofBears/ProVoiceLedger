@@ -7,6 +7,7 @@ namespace ProVoiceLedger.Pages
         public MainTabbedPage()
         {
             InitializeComponent();
+
         }
     }
 }

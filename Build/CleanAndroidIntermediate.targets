@@ -1,0 +1,13 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- ✅ Only run on Android builds -->
+  <PropertyGroup>
+    <_IsAndroidBuild Condition="'$(TargetFramework)' == 'net7.0-android' Or '$(TargetFramework)' == 'net8.0-android'">true</_IsAndroidBuild>
+  </PropertyGroup>
+
+  <Target Name="CleanAndroidIntermediate" AfterTargets="Clean" Condition="'$(_IsAndroidBuild)' == 'true'">
+    <Message Text="🧹 Cleaning Android intermediate directory: $(_AndroidLibraryProjectIntermediatePath)" Importance="High" />
+    <RemoveDir Directories="$(_AndroidLibraryProjectIntermediatePath)" Condition="Exists('$(_AndroidLibraryProjectIntermediatePath)')" />
+  </Target>
+
+</Project>

@@ -2,91 +2,170 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ProVoiceLedger.Pages.RecordingPage"
-             BackgroundColor="White"
-             Padding="20">
+             BackgroundColor="Black"
+             Padding="30">
 
-    <VerticalStackLayout Spacing="30" HorizontalOptions="Center" VerticalOptions="Center">
+    <!-- 🌌 Gradient Background -->
+    <ContentPage.Background>
+        <LinearGradientBrush EndPoint="1,1">
+            <GradientStop Color="#0a0a2f" Offset="0.0" />
+            <GradientStop Color="#2a005f" Offset="0.5" />
+            <GradientStop Color="#000020" Offset="1.0" />
+        </LinearGradientBrush>
+    </ContentPage.Background>
 
-        <!-- 🎙️ Record Button -->
-        <ImageButton Source="record.png"
-                     WidthRequest="200"
-                     HeightRequest="200"
-                     BackgroundColor="Transparent"
-                     Clicked="OnRecordButtonClicked"/>
+    <!-- 🧩 Main Layout -->
+    <VerticalStackLayout Spacing="20"
+                         HorizontalOptions="Center"
+                         VerticalOptions="Start"
+                         Margin="0,20,0,0">
 
-        <!-- 📈 Waveform Progress -->
-        <ProgressBar x:Name="WaveformBar"
-                     WidthRequest="200"
-                     HeightRequest="6"
-                     Progress="0"
-                     BackgroundColor="Transparent"
-                     ProgressColor="OrangeRed"
-                     HorizontalOptions="Center" />
+        <!-- 📝 Filename + Rename -->
+        <Grid WidthRequest="320"
+      ColumnDefinitions="*,Auto"
+      Margin="0,0,0,-5">
 
-        <!-- ⏱️ Timestamp Label -->
-        <Label x:Name="TimestampLabel"
-               Text="00:00 / ∞"
-               FontSize="14"
-               TextColor="DarkBlue"
-               HorizontalOptions="Center" />
+            <Label x:Name="FilenameLabel"
+           Text="Untitled"
+           FontSize="16"
+           FontAttributes="Bold"
+           TextColor="AntiqueWhite"
+           VerticalOptions="Center"
+           HorizontalOptions="Start"
+           Margin="0,0,10,0"
+           Grid.Column="0" />
+
+            <!-- ✅ Clicked handler matches: private async void OnRenameButtonClicked(object sender, EventArgs e) -->
+            <ImageButton Source="pencil.png"
+                 WidthRequest="24"
+                 HeightRequest="24"
+                 BackgroundColor="Transparent"
+                 Clicked="OnRenameButtonClicked"
+                 Grid.Column="1"
+                 VerticalOptions="Center"
+                 HorizontalOptions="End" />
+        </Grid>
+        
+        <!-- 🌀 Arc Visualizer + 🎤 Mic Button -->
+        <Grid WidthRequest="320"
+              HeightRequest="280"
+              HorizontalOptions="Center"
+              VerticalOptions="Center">
+
+            <!-- Arc Visualizer -->
+            <GraphicsView x:Name="VisualizerCanvas"
+                          WidthRequest="250"
+                          HeightRequest="250"
+                          BackgroundColor="Transparent" />
+
+            <!-- Mic Button (Crossfade + Pulse) -->
+            <Grid x:Name="MicImageContainer"
+                  WidthRequest="170"
+                  HeightRequest="170"
+                  HorizontalOptions="Center"
+                  VerticalOptions="Center">
+
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnRecordButtonClicked" />
+                </Grid.GestureRecognizers>
+
+                <!-- Base Mic Image -->
+                <Image x:Name="MicImageBase"
+                       Source="mic_white.png"
+                       Aspect="AspectFit"
+                       WidthRequest="170"
+                       HeightRequest="170"
+                       Opacity="1.0" />
+
+                <!-- Overlay for Crossfade -->
+                <Image x:Name="MicImageOverlay"
+                       Source="mic_cyan.png"
+                       Aspect="AspectFit"
+                       WidthRequest="170"
+                       HeightRequest="170"
+                       Opacity="0.0" />
+
+                <!-- Pulse Effect Image -->
+                <Image x:Name="MicPulseImage"
+                       Source="mic_pulse_se.png"
+                       Aspect="AspectFit"
+                       WidthRequest="170"
+                       HeightRequest="170"
+                       Opacity="0.0"
+                       IsVisible="True"
+                       InputTransparent="True" />
+            </Grid>
+        </Grid>
+
+        <!-- ⏱️ Recording Duration -->
+        <Label x:Name="DurationLabel"
+               Text="0:00:00 / 0:00:00"
+               FontSize="20"
+               FontAttributes="Bold"
+               TextColor="White"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               Margin="0,-10,0,0" />
 
         <!-- ▶️ Playback Controls -->
-        <HorizontalStackLayout Spacing="16" HorizontalOptions="Center">
+        <HorizontalStackLayout Spacing="0"
+                               HorizontalOptions="Center"
+                               Margin="0,5,0,0">
 
-            <ImageButton Source="seekstart.png"
-                         WidthRequest="40"
-                         HeightRequest="40"
+            <ImageButton Source="rewind_cu.png"
+                         WidthRequest="60"
+                         HeightRequest="60"
                          BackgroundColor="Transparent"
-                         Clicked="OnSeekStartClicked"/>
+                         Clicked="OnRewindClicked" />
 
-            <ImageButton Source="rewind.png"
-                         WidthRequest="40"
-                         HeightRequest="40"
+            <Image x:Name="PlayPauseImage"
+                   Source="play_cu.png"
+                   WidthRequest="110"
+                   HeightRequest="90"
+                   Aspect="AspectFit"
+                   BackgroundColor="Transparent">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnPlayPauseButtonClicked" />
+                </Image.GestureRecognizers>
+            </Image>
+
+            <ImageButton Source="fastfoward_cu.png"
+                         WidthRequest="60"
+                         HeightRequest="60"
                          BackgroundColor="Transparent"
-                         Clicked="OnRewindClicked"/>
-
-            <ImageButton x:Name="PlayPauseButton"
-                         Source="play.png"
-                         WidthRequest="40"
-                         HeightRequest="40"
-                         BackgroundColor="Transparent"
-                         Clicked="OnPlayPauseClicked"/>
-
-            <ImageButton Source="stop.png"
-                         WidthRequest="40"
-                         HeightRequest="40"
-                         BackgroundColor="Transparent"
-                         Clicked="OnStopButtonClicked"/>
-
-            <ImageButton Source="fastforward.png"
-                         WidthRequest="40"
-                         HeightRequest="40"
-                         BackgroundColor="Transparent"
-                         Clicked="OnFastForwardClicked"/>
-
-            <ImageButton Source="seekend.png"
-                         WidthRequest="40"
-                         HeightRequest="40"
-                         BackgroundColor="Transparent"
-                         Clicked="OnSeekEndClicked"/>
-
+                         Clicked="OnFastForwardClicked" />
         </HorizontalStackLayout>
 
-        <!-- ✅ Finish Button -->
-        <ImageButton Source="finish.png"
-                     WidthRequest="60"
-                     HeightRequest="60"
-                     BackgroundColor="Transparent"
-                     Clicked="OnFinishButtonClicked"
-                     HorizontalOptions="Center" />
+        <!-- 🆕 New + 🗑️ Delete Buttons -->
+        <Grid WidthRequest="380"
+              ColumnDefinitions="*,*"
+              Margin="0,10,0,0">
 
-        <!-- ⚙️ Settings 
-        <ImageButton Source="settings.png"
-                     WidthRequest="40"
-                     HeightRequest="40"
-                     BackgroundColor="Transparent"
-                     Clicked="OnSettingsClicked"
-                     HorizontalOptions="End" /> -->
+            <Button Text="New"
+                    x:Name="NewButton"
+                    Clicked="OnNewButtonClicked"
+                    BorderColor="#6A00A1"
+                    BackgroundColor="#2a005f"
+                    TextColor="AntiqueWhite"
+                    CornerRadius="12"
+                    HeightRequest="44"
+                    WidthRequest="140"
+                    FontAttributes="Bold"
+                    HorizontalOptions="Start"
+                    Grid.Column="0" />
 
+            <Button Text="Delete"
+                    x:Name="DeleteButton"
+                    Clicked="OnDeleteButtonClicked"
+                    BorderColor="#6A00A1"
+                    BackgroundColor="#2a005f"
+                    TextColor="AntiqueWhite"
+                    CornerRadius="12"
+                    HeightRequest="44"
+                    WidthRequest="140"
+                    FontAttributes="Bold"
+                    HorizontalOptions="End"
+                    Grid.Column="1" />
+        </Grid>
     </VerticalStackLayout>
 </ContentPage>

@@ -91,5 +91,7 @@ namespace ProVoiceLedger.Core.Audio
             var elapsed = DateTime.UtcNow - _playbackStartTime;
             PlaybackProgressUpdated?.Invoke(elapsed);
         }
+        public RecordedClipInfo? CurrentClip { get; private set; }
+
     }
 }

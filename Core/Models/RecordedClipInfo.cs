@@ -58,6 +58,14 @@ namespace ProVoiceLedger.Core.Models
         /// <summary>🕔 Optional stop time of recording</summary>
         public DateTime? StoppedAt { get; set; }
 
+        /// <summary>📄 Filename derived from FilePath</summary>
+        [Ignore]
+        public string Filename => System.IO.Path.GetFileName(FilePath);
+
+        /// <summary>✅ Indicates if the clip has a valid file path and duration</summary>
+        [Ignore]
+        public bool IsValid => !string.IsNullOrWhiteSpace(FilePath) && Duration > 0;
+
         public RecordedClipInfo() { }
 
         public RecordedClipInfo(
