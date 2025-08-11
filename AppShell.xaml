@@ -4,12 +4,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:ProVoiceLedger.Pages"
-    FlyoutBehavior="Disabled"
-    BackgroundColor="Black">
-
-    <Shell.Resources>
-        <!-- Optional: global styles or colors -->
-    </Shell.Resources>
+    FlyoutBehavior="Disabled">
 
     <TabBar>
         <ShellContent
@@ -25,12 +20,7 @@
             ContentTemplate="{DataTemplate pages:SessionHistoryPage}" />
     </TabBar>
 
-    <!-- Hidden routes -->
-    <ShellContent
-        Route="splash"
-        ContentTemplate="{DataTemplate pages:SplashPage}"
-        IsVisible="False" />
-
+    <!-- Hidden route for login navigation -->
     <ShellContent
         Route="login"
         ContentTemplate="{DataTemplate pages:LoginPage}"

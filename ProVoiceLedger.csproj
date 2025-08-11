@@ -4,7 +4,7 @@
     <TargetFrameworks>net8.0-windows10.0.19041.0;net8.0-android34.0</TargetFrameworks>
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType> <!-- ✅ Changed from Exe to WinExe -->
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>ProVoiceLedger</RootNamespace>
@@ -29,16 +29,16 @@
   <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-android34.0'">
     <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
     <AndroidSdkDirectory>C:\Users\GraveBear\AppData\Local\Android\Sdk</AndroidSdkDirectory>
+	<MauiGenerateMain>true</MauiGenerateMain>
   </PropertyGroup>
 
   <!-- Dependencies -->
   <ItemGroup>
-    <!-- MAUI Core -->
-    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <!-- Required for .NET 8 MAUI -->
     <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.100" />
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.100" />
-    <PackageReference Include="Microsoft.Maui.Core" Version="8.0.100" />
-    <PackageReference Include="Microsoft.Maui.Graphics" Version="8.0.100" />
+
+    <!-- External Libraries -->
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
 
     <!-- .NET Extensions -->
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
@@ -55,7 +55,7 @@
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
   </ItemGroup>
 
-  <!-- ✅ Windows App SDK for WindowId, AppWindow, etc. -->
+  <!-- Windows App SDK -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows10.0.19041.0'">
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240802000" />
   </ItemGroup>
@@ -92,8 +92,7 @@
     <Folder Include="Build\" />
   </ItemGroup>
 
-
-
+  <!-- Custom build targets -->
   <Import Project="Build/CleanAndroidIntermediate.targets" />
   <Import Project="Build/CleanWindowsTemp.targets" />
 
