@@ -13,6 +13,9 @@ namespace ProVoiceLedger.Core.Models
         /// <summary>📁 Path to the saved audio file</summary>
         public string FilePath { get; set; } = string.Empty;
 
+        /// <summary>📝 Display title for the recording</summary>
+        public string Title { get; set; } = string.Empty;
+
         /// <summary>🕒 UTC timestamp when recording was saved</summary>
         public DateTime Timestamp { get; set; }
 
@@ -33,6 +36,15 @@ namespace ProVoiceLedger.Core.Models
                 ? new Dictionary<string, string>()
                 : JsonSerializer.Deserialize<Dictionary<string, string>>(MetadataJson) ?? new();
             set => MetadataJson = JsonSerializer.Serialize(value);
+        }
+
+        [Ignore]
+        public float[] EditedWaveform { get; private set; } = Array.Empty<float>();
+
+        public void SaveEditedWaveform(float[] amplitudes)
+        {
+            EditedWaveform = amplitudes;
+            // TODO: Persist to file or database if needed
         }
 
         /// <summary>🗓️ Optional override for recorded timestamp</summary>

@@ -36,13 +36,17 @@ namespace ProVoiceLedger.Pages
             _state.OnTimeUpdated += OnTimeUpdated;
             _state.OnAmplitudeUpdated += amp =>
             {
-                _buffer.UpdateFromMic();
+                _buffer.UpdateFromMic(amp);
                 _arcDrawable.IsRecording = (_state.CurrentState == RecordingState.Recording);
-                VisualizerCanvas.Invalidate();
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    VisualizerCanvas.Invalidate();
+                });
             };
 
             ResetUI();
         }
+
 
         private void OnStateChanged(RecordingState state)
         {
@@ -83,9 +87,15 @@ namespace ProVoiceLedger.Pages
             DurationLabel.Text = "00:00 / 00:00";
             CrossfadeMicImage(1.0, 0.0);
             _arcDrawable.IsRecording = false;
-            VisualizerCanvas.Invalidate();
+
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                VisualizerCanvas.Invalidate();
+            });
+
             _state.Reset();
         }
+
 
         private string GenerateDefaultFilename()
         {
@@ -215,7 +225,7 @@ namespace ProVoiceLedger.Pages
             _recordingStartTime = DateTime.Now;
 
             _arcDrawable.IsRecording = true;
-            _buffer.UpdateFromMic();
+            _buffer.UpdateFromMic(_audio.Amplitude); 
             VisualizerCanvas.Invalidate();
 
             _recordingCts = new CancellationTokenSource();
@@ -225,12 +235,17 @@ namespace ProVoiceLedger.Pages
                 {
                     double elapsed = (DateTime.Now - _recordingStartTime).TotalSeconds;
                     _audio.SetCurrentTime(elapsed);
+
+                    float amp = _audio.Amplitude;
+                    _buffer.UpdateFromMic(amp);
+
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
                         string formatted = FormatTime(TimeSpan.FromSeconds(elapsed));
                         DurationLabel.Text = $"{formatted} / {formatted}";
                         VisualizerCanvas.Invalidate();
                     });
+
                     await Task.Delay(100);
                 }
             });

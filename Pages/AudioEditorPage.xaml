@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ProVoiceLedger.Pages.AudioEditorPage"
+             BackgroundColor="Black"
+             Padding="20">
+
+	<ContentPage.Background>
+		<LinearGradientBrush EndPoint="1,1">
+			<GradientStop Color="#0a0a2f" Offset="0.0" />
+			<GradientStop Color="#2a005f" Offset="0.5" />
+			<GradientStop Color="#000020" Offset="1.0" />
+		</LinearGradientBrush>
+	</ContentPage.Background>
+
+	<VerticalStackLayout Spacing="20">
+
+		<!-- 🎵 Title -->
+		<HorizontalStackLayout>
+			<Label Text="Title:" TextColor="White" />
+			<Entry x:Name="TitleEntry" TextColor="White" BackgroundColor="#222" WidthRequest="200" />
+		</HorizontalStackLayout>
+
+		<!-- 📈 Waveform in Framed Container -->
+		<Frame BackgroundColor="#111"
+               BorderColor="#444"
+               CornerRadius="12"
+               Padding="10"
+               HasShadow="False">
+
+			<GraphicsView x:Name="WaveformView"
+                          HeightRequest="180"
+                          BackgroundColor="Transparent" />
+		</Frame>
+
+		<!-- ▶️ Playback Controls with Icons -->
+		<HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+			<ImageButton Source="seekstart.png" Clicked="OnSeekStartClicked" BackgroundColor="Transparent" />
+			<ImageButton Source="rewind.png" Clicked="OnRewindClicked" BackgroundColor="Transparent" />
+			<ImageButton Source="play.png" Clicked="OnPlayClicked" BackgroundColor="Transparent" />
+			<ImageButton Source="pause.png" Clicked="OnPauseClicked" BackgroundColor="Transparent" />
+			<ImageButton Source="stop.png" Clicked="OnStopClicked" BackgroundColor="Transparent" />
+			<ImageButton Source="fastforward.png" Clicked="OnFastForwardClicked" BackgroundColor="Transparent" />
+			<ImageButton Source="seekend.png" Clicked="OnSeekEndClicked" BackgroundColor="Transparent" />
+		</HorizontalStackLayout>
+
+		<!-- ✂️ Editing Tools -->
+		<HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+			<Button Text="Cut" Clicked="OnCutClicked" />
+			<Button Text="Clear Selection" Clicked="OnClearSelectionClicked" />
+		</HorizontalStackLayout>
+
+		<!-- 💾 Save / ❌ Cancel -->
+		<HorizontalStackLayout Spacing="20" HorizontalOptions="Center">
+			<Button Text="💾 Save" Clicked="OnSaveClicked"
+                    BackgroundColor="#2a005f" TextColor="White" />
+			<Button Text="❌ Cancel" Clicked="OnCancelClicked"
+                    BackgroundColor="#222" TextColor="White" />
+		</HorizontalStackLayout>
+
+	</VerticalStackLayout>
+</ContentPage>

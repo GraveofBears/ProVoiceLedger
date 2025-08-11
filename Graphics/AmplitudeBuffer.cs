@@ -11,6 +11,8 @@ namespace ProVoiceLedger.Graphics
         private float _lastAmplitude = 0f;
         private float _pulsePhase = 0f;
 
+        private readonly object _lock = new(); // 🔒 Thread safety lock
+
         /// <summary>
         /// Indicates whether audio is actively being recorded.
         /// Used for visual fade-in/out.
@@ -28,9 +30,12 @@ namespace ProVoiceLedger.Graphics
         /// </summary>
         public void Push(float amplitude)
         {
-            _samples[_index] = amplitude;
-            _index = (_index + 1) % _samples.Length;
-            _lastAmplitude = amplitude;
+            lock (_lock)
+            {
+                _samples[_index] = amplitude;
+                _index = (_index + 1) % _samples.Length;
+                _lastAmplitude = amplitude;
+            }
         }
 
         /// <summary>
@@ -38,13 +43,16 @@ namespace ProVoiceLedger.Graphics
         /// </summary>
         public float[] GetSamples()
         {
-            var result = new float[_samples.Length];
-            for (int i = 0; i < _samples.Length; i++)
+            lock (_lock)
             {
-                int idx = (_index + i) % _samples.Length;
-                result[i] = _samples[idx];
+                var result = new float[_samples.Length];
+                for (int i = 0; i < _samples.Length; i++)
+                {
+                    int idx = (_index + i) % _samples.Length;
+                    result[i] = _samples[idx];
+                }
+                return result;
             }
-            return result;
         }
 
         /// <summary>
@@ -71,9 +79,9 @@ namespace ProVoiceLedger.Graphics
         /// Public method to update buffer during recording.
         /// Replace this with real mic input later.
         /// </summary>
-        public void UpdateFromMic()
+        public void UpdateFromMic(float amplitude)
         {
-            Update(); // For now, use synthetic waveform
+            Push(amplitude);
         }
     }
 }

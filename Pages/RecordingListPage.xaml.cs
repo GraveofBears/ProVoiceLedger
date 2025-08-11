@@ -2,6 +2,7 @@
 using ProVoiceLedger.Core.Models;
 using ProVoiceLedger.Core.Services;
 using System;
+using System.Threading.Tasks;
 
 namespace ProVoiceLedger.Pages
 {
@@ -10,10 +11,8 @@ namespace ProVoiceLedger.Pages
         private readonly SessionDatabase _sessionDatabase;
         private readonly IRecordingService _recordingService;
 
-        // ✅ Parameterless constructor for XAML instantiation
         public RecordingListPage() : this(App.SessionDatabase, App.RecordingService) { }
 
-        // ✅ Constructor with DI for manual instantiation or testing
         public RecordingListPage(SessionDatabase sessionDatabase, IRecordingService recordingService)
         {
             InitializeComponent();
@@ -23,7 +22,6 @@ namespace ProVoiceLedger.Pages
             LoadRecordings();
         }
 
-        // 📦 Load all saved recordings into the view
         private async void LoadRecordings()
         {
             try
@@ -38,19 +36,44 @@ namespace ProVoiceLedger.Pages
             }
         }
 
-        // ▶️ Play selected recording
-        private async void OnPlayClicked(object sender, EventArgs e)
+        // ✏️ Edit waveform
+        private async void OnEditClicked(object sender, EventArgs e)
+        {
+            if (sender is ImageButton button && button.CommandParameter is RecordedClipInfo clip)
+            {
+                await Navigation.PushAsync(new AudioEditorPage(clip));
+            }
+        }
+
+        // 📤 Send or export
+        private async void OnSendClicked(object sender, EventArgs e)
         {
             if (sender is ImageButton button && button.CommandParameter is RecordedClipInfo clip)
             {
                 try
                 {
-                    await _recordingService.PlayRecordingAsync(clip.FilePath);
+                    await DisplayAlert("Send", $"Stub: send {clip.Title}", "OK");
+                    // TODO: Implement actual sharing/export logic
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Playback error: {ex}");
-                    await DisplayAlert("Error", "Failed to play recording.", "OK");
+                    Console.WriteLine($"Send error: {ex}");
+                    await DisplayAlert("Error", "Failed to send recording.", "OK");
+                }
+            }
+        }
+
+        // 📝 Rename recording
+        private async void OnRenameClicked(object sender, EventArgs e)
+        {
+            if (sender is ImageButton button && button.CommandParameter is RecordedClipInfo clip)
+            {
+                string newTitle = await DisplayPromptAsync("Rename", "Enter new title:", initialValue: clip.Title);
+                if (!string.IsNullOrWhiteSpace(newTitle))
+                {
+                    clip.Title = newTitle;
+                    await _sessionDatabase.UpdateRecordingAsync(clip);
+                    LoadRecordings();
                 }
             }
         }

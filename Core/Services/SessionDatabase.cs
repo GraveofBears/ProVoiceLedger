@@ -112,6 +112,11 @@ namespace ProVoiceLedger.Core.Services
                 .OrderByDescending(r => r.Timestamp)
                 .ToListAsync();
         }
+        public async Task<int> UpdateRecordingAsync(RecordedClipInfo clip)
+        {
+            await InitializeAsync();
+            return await _database.UpdateAsync(clip);
+        }
 
         // 🗑️ Delete a recording by ID
         public async Task<int> DeleteRecordingAsync(int id)

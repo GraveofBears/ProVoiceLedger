@@ -36,7 +36,7 @@
            Grid.Column="0" />
 
             <!-- ✅ Clicked handler matches: private async void OnRenameButtonClicked(object sender, EventArgs e) -->
-            <ImageButton Source="pencil.png"
+            <ImageButton Source="pen.png"
                  WidthRequest="24"
                  HeightRequest="24"
                  BackgroundColor="Transparent"
