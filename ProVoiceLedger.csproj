@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0-windows10.0.19041.0;net8.0-android34.0</TargetFrameworks>
+    <TargetFrameworks>net8.0-windows;net8.0-android</TargetFrameworks>
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
-    <OutputType>WinExe</OutputType> <!-- ✅ Changed from Exe to WinExe -->
+    <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>ProVoiceLedger</RootNamespace>
@@ -18,7 +18,7 @@
   </PropertyGroup>
 
   <!-- Windows Platform -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-windows10.0.19041.0'">
+  <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-windows'">
     <TargetPlatformIdentifier>Windows</TargetPlatformIdentifier>
     <WindowsPackageType>None</WindowsPackageType>
     <TargetPlatformVersion>10.0.19041.0</TargetPlatformVersion>
@@ -26,19 +26,19 @@
   </PropertyGroup>
 
   <!-- Android Platform -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-android34.0'">
+  <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-android'">
     <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
     <AndroidSdkDirectory>C:\Users\GraveBear\AppData\Local\Android\Sdk</AndroidSdkDirectory>
-	<MauiGenerateMain>true</MauiGenerateMain>
   </PropertyGroup>
 
   <!-- Dependencies -->
   <ItemGroup>
-    <!-- Required for .NET 8 MAUI -->
-    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.100" />
-
-    <!-- External Libraries -->
+    <!-- MAUI Core -->
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.100" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.100" />
+    <PackageReference Include="Microsoft.Maui.Core" Version="8.0.100" />
+    <PackageReference Include="Microsoft.Maui.Graphics" Version="8.0.100" />
 
     <!-- .NET Extensions -->
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
@@ -55,11 +55,6 @@
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
   </ItemGroup>
 
-  <!-- Windows App SDK -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows10.0.19041.0'">
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240802000" />
-  </ItemGroup>
-
   <!-- App Assets -->
   <ItemGroup>
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
@@ -69,31 +64,36 @@
     <MauiFont Include="Resources\Fonts\*" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
-
-  <!-- Cleanup and XAML registration -->
   <ItemGroup>
     <Compile Remove="Pages\GradientPage.xaml.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <MauiXaml Remove="Pages\GradientPage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
     <None Remove="App.xaml~RF1605234c.TMP" />
   </ItemGroup>
 
+  <!-- Registered XAML Pages -->
   <ItemGroup>
-    <MauiXaml Update="Pages\AudioEditorPage.xaml" />
     <MauiXaml Update="Pages\LoginPage.xaml" />
-    <MauiXaml Update="Pages\MainTabbedPage.xaml" />
-    <MauiXaml Update="Pages\RecordingListPage.xaml" />
-    <MauiXaml Update="Pages\SettingsPage.xaml" />
+    <MauiXaml Update="Pages\MainTabbedPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\RecordingListPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Pages\SettingsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
     <MauiXaml Update="Pages\SplashPage.xaml" />
     <MauiXaml Update="Pages\MainPage.xaml" />
     <MauiXaml Update="Pages\RecordingPage.xaml" />
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="Build\" />
   </ItemGroup>
-
-  <!-- Custom build targets -->
-  <Import Project="Build/CleanAndroidIntermediate.targets" />
-  <Import Project="Build/CleanWindowsTemp.targets" />
+	<Import Project="Build/CleanAndroidIntermediate.targets" />
+	<Import Project="Build/CleanWindowsTemp.targets" />
 
 </Project>

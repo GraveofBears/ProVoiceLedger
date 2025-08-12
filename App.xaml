@@ -14,7 +14,14 @@
 
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- 🧩 Add global converters, fonts, or static values here if needed -->
+            <!-- 🔤 Global font sizes -->
+            <x:Double x:Key="FontSizeSmall">12</x:Double>
+            <x:Double x:Key="FontSizeMedium">16</x:Double>
+            <x:Double x:Key="FontSizeLarge">22</x:Double>
+
+            <!-- 🎯 Static values -->
+            <x:String x:Key="AppDisplayName">ProVoiceLedger</x:String>
+            <x:Double x:Key="DefaultSpacing">20</x:Double>
 
         </ResourceDictionary>
     </Application.Resources>

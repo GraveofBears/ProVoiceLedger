@@ -1,42 +1,29 @@
 ﻿using Microsoft.Maui.Controls;
-using Microsoft.Extensions.DependencyInjection;
+using System;
 using ProVoiceLedger.Core.Services;
-using ProVoiceLedger.Pages;
+using ProVoiceLedger.Core.Audio;
+using ProVoiceLedger.Core.Models;
 using ProVoiceLedger.AudioBackup;
 
-namespace ProVoiceLedger;
-
-public partial class App : Application
+namespace ProVoiceLedger
 {
-    // 🔒 Directly injected services
-    public static SessionDatabase SessionDb { get; private set; } = default!;
-    public static IAudioCaptureService AudioService { get; private set; } = default!;
-
-    public App(SessionDatabase db, IAudioCaptureService audioCaptureService)
+    public partial class App : Application
     {
-        InitializeComponent();
+        public static IServiceProvider Services { get; private set; }
 
-        // 🧩 Assign injected services
-        SessionDb = db;
-        AudioService = audioCaptureService;
+        public static IRecordingService RecordingService =>
+            Services.GetRequiredService<IRecordingService>();
 
-        // 🧭 Set initial navigation
-        MainPage = new NavigationPage(new SplashPage());
+        public static SessionDatabase SessionDatabase =>
+            Services.GetRequiredService<SessionDatabase>();
+
+        public App(IServiceProvider services)
+        {
+            Services = services;
+            InitializeComponent();
+
+            // 🌒 Start with splash screen wrapped in navigation
+            MainPage = new NavigationPage(new Pages.SplashPage());
+        }
     }
-
-    // 🧰 Access DI container
-    private static IServiceProvider? Services =>
-        Current?.Handler?.MauiContext?.Services;
-
-    // 🎙️ Recording service (DI-resolved)
-    public static IRecordingService? RecordingService =>
-        Services?.GetService<IRecordingService>();
-
-    // 🔊 Playback service (DI-resolved)
-    public static IAudioPlaybackService? PlaybackService =>
-        Services?.GetService<IAudioPlaybackService>();
-
-    // 📦 Session database (DI-resolved fallback)
-    public static SessionDatabase? SessionDatabase =>
-        Services?.GetService<SessionDatabase>();
 }
