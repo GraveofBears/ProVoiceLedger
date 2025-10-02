@@ -3,26 +3,20 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="ProVoiceLedger.App">
 
-    <!-- 🌐 Global application resources -->
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-
-                <!-- 🎨 Theme and style resources -->
-                <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
-                <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
-
+                <!-- Only include these if the files exist and are set to Build Action: MauiXaml -->
+                <!-- Remove or comment out if missing to avoid build errors -->
+                <!-- <ResourceDictionary Source="Resources/Styles/Colors.xaml" /> -->
+                <!-- <ResourceDictionary Source="Resources/Styles/Styles.xaml" /> -->
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- 🔤 Global font sizes -->
             <x:Double x:Key="FontSizeSmall">12</x:Double>
             <x:Double x:Key="FontSizeMedium">16</x:Double>
             <x:Double x:Key="FontSizeLarge">22</x:Double>
-
-            <!-- 🎯 Static values -->
             <x:String x:Key="AppDisplayName">ProVoiceLedger</x:String>
             <x:Double x:Key="DefaultSpacing">20</x:Double>
-
         </ResourceDictionary>
     </Application.Resources>
 </Application>
