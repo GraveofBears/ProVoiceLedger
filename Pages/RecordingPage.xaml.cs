@@ -1,270 +1,260 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Graphics;
-using ProVoiceLedger.AudioBackup;
-using ProVoiceLedger.Core.Audio;
-using ProVoiceLedger.Core.Models;
-using ProVoiceLedger.Core.Services;
-using ProVoiceLedger.Graphics;
+﻿using Microsoft.Maui.Controls;
+using NAudio.Wave;
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 
-namespace ProVoiceLedger.Pages
+namespace ProVoiceLedger.Pages;
+
+public partial class RecordingPage : ContentPage
 {
-    public partial class RecordingPage : ContentPage
+    // Audio recording fields
+    private WaveInEvent? _waveIn;
+    private WaveFileWriter? _writer;
+    private string? _currentRecordingPath;
+    private bool _isRecording;
+    private bool _isPaused;
+    private DateTime _recordingStartTime;
+    private readonly System.Timers.Timer _durationTimer;
+
+    public RecordingPage()
     {
-        private readonly AudioManager _audio = AudioManager.Instance;
-        private readonly RecordingStateManager _state = RecordingStateManager.StateManager;
-        private readonly ArcWaveformDrawable _arcDrawable;
-        private readonly AmplitudeBuffer _buffer = new AmplitudeBuffer();
+        InitializeComponent();
 
-        private string? _currentFilePath;
-        private DateTime _recordingStartTime;
-        private CancellationTokenSource? _recordingCts;
-
-        public RecordingPage()
+        _durationTimer = new System.Timers.Timer(100);
+        _durationTimer.Elapsed += (s, e) =>
         {
-            InitializeComponent();
-
-            _arcDrawable = new ArcWaveformDrawable(_buffer);
-            VisualizerCanvas.Drawable = _arcDrawable;
-
-            _state.OnStateChanged += OnStateChanged;
-            _state.OnTimeUpdated += OnTimeUpdated;
-            _state.OnAmplitudeUpdated += amp =>
+            if (_isRecording && !_isPaused)
             {
-                _buffer.UpdateFromMic(amp);
-                _arcDrawable.IsRecording = (_state.CurrentState == RecordingState.Recording);
+                var elapsed = DateTime.Now - _recordingStartTime;
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    VisualizerCanvas.Invalidate();
+                    DurationLabel.Text = $"{elapsed:hh\\:mm\\:ss} / 0:00:00";
                 });
+            }
+        };
+
+        InitializeAudio();
+    }
+
+    private void InitializeAudio()
+    {
+        try
+        {
+            _waveIn = new WaveInEvent
+            {
+                WaveFormat = new WaveFormat(44100, 1)
             };
 
-            ResetUI();
+            _waveIn.DataAvailable += OnDataAvailable;
+            _waveIn.RecordingStopped += OnRecordingStopped;
         }
-
-
-        private void OnStateChanged(RecordingState state)
+        catch (Exception ex)
         {
-            switch (state)
+            MainThread.BeginInvokeOnMainThread(async () =>
             {
-                case RecordingState.Recording:
-                    CrossfadeMicImage(0.0, 1.0);
-                    _arcDrawable.IsRecording = true;
-                    break;
-                case RecordingState.Playing:
-                    CrossfadeMicImage(1.0, 0.0);
-                    _arcDrawable.IsRecording = false;
-                    break;
-                case RecordingState.Paused:
-                case RecordingState.Idle:
-                    CrossfadeMicImage(1.0, 0.0);
-                    _arcDrawable.IsRecording = false;
-                    break;
-            }
-
-            VisualizerCanvas.Invalidate();
-        }
-
-        private void OnTimeUpdated(TimeSpan time)
-        {
-            DurationLabel.Text = $"{FormatTime(TimeSpan.FromSeconds(_audio.CurrentTime))} / {FormatTime(TimeSpan.FromSeconds(_audio.TotalDuration))}";
-        }
-
-        private async void CrossfadeMicImage(double baseOpacity, double pulseOpacity)
-        {
-            await MicImageBase.FadeTo(baseOpacity, 250, Easing.CubicInOut);
-            await MicImageOverlay.FadeTo(1.0 - baseOpacity, 250, Easing.CubicInOut);
-            await MicPulseImage.FadeTo(pulseOpacity, 250, Easing.CubicInOut);
-        }
-
-        private void ResetUI()
-        {
-            DurationLabel.Text = "00:00 / 00:00";
-            CrossfadeMicImage(1.0, 0.0);
-            _arcDrawable.IsRecording = false;
-
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                VisualizerCanvas.Invalidate();
+                await DisplayAlert("Audio Error", $"Failed to initialize audio: {ex.Message}", "OK");
             });
-
-            _state.Reset();
         }
+    }
 
-
-        private string GenerateDefaultFilename()
+    private void OnDataAvailable(object? sender, WaveInEventArgs e)
+    {
+        if (_writer != null && _isRecording && !_isPaused)
         {
-            string author = Environment.UserName ?? "User";
-            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            return $"{author}_{timestamp}.wav";
+            _writer.Write(e.Buffer, 0, e.BytesRecorded);
+            _writer.Flush();
         }
+    }
 
-        private string FormatTime(TimeSpan time)
-        {
-            return $"{time.Minutes:D2}:{time.Seconds:D2}";
-        }
+    private void OnRecordingStopped(object? sender, StoppedEventArgs e)
+    {
+        _writer?.Dispose();
+        _writer = null;
 
-        private void OnRewindClicked(object sender, EventArgs e)
+        if (e.Exception != null)
         {
-            _audio.Rewind();
-            OnTimeUpdated(TimeSpan.FromSeconds(_audio.CurrentTime));
-        }
-
-        private void OnFastForwardClicked(object sender, EventArgs e)
-        {
-            _audio.FastForward();
-            OnTimeUpdated(TimeSpan.FromSeconds(_audio.CurrentTime));
-        }
-
-        private void OnPlayPauseButtonClicked(object sender, EventArgs e)
-        {
-            if (_state.CurrentState == RecordingState.Playing)
+            MainThread.BeginInvokeOnMainThread(async () =>
             {
-                _audio.Pause();
-                _state.SetState(RecordingState.Paused);
-                PlayPauseImage.Source = "play_cu.png";
-            }
-            else
-            {
-                if (string.IsNullOrEmpty(_currentFilePath) || !File.Exists(_currentFilePath))
-                    return;
-
-                if (_audio.CurrentTime >= _audio.TotalDuration)
-                    _audio.Rewind();
-
-                _audio.Play();
-                _state.SetState(RecordingState.Playing);
-                PlayPauseImage.Source = "pause_cu.png";
-                OnTimeUpdated(TimeSpan.FromSeconds(_audio.CurrentTime));
-            }
+                await DisplayAlert("Recording Error", e.Exception.Message, "OK");
+            });
         }
-        private async void OnRecordButtonClicked(object sender, EventArgs e)
+    }
+
+    private async void OnRecordButtonClicked(object? sender, EventArgs e)
+    {
+        if (!_isRecording)
         {
-            if (_state.CurrentState == RecordingState.Recording)
-            {
-                await StopRecordingAsync();
-                PlayPauseImage.Source = "play_cu.png";
-            }
-            else
-            {
-                await StartRecordingAsync();
-                PlayPauseImage.Source = "pause_cu.png";
-            }
+            await StartRecordingAsync();
         }
-        private async void OnNewButtonClicked(object sender, EventArgs e)
+        else
         {
-            bool confirm = await DisplayAlert("Start New?", "Save current dictation before starting a new one?", "Save & New", "Discard");
-            if (confirm)
-            {
-                await StopRecordingAsync(); // Optional: export/save logic
-            }
+            await StopRecordingAsync();
+        }
+    }
 
-            ResetUI();
-            _currentFilePath = Path.Combine(_audio.GetSaveDirectory(), GenerateDefaultFilename());
-            FilenameLabel.Text = Path.GetFileName(_currentFilePath);
+    private async void OnRenameButtonClicked(object sender, EventArgs e)
+    {
+        var newName = await DisplayPromptAsync("Rename", "Enter new filename:",
+            initialValue: FilenameLabel.Text,
+            placeholder: "Untitled");
+
+        if (!string.IsNullOrWhiteSpace(newName))
+        {
+            FilenameLabel.Text = newName;
+        }
+    }
+
+    private void OnPlayPauseButtonClicked(object? sender, EventArgs e)
+    {
+        var currentSource = PlayPauseImage.Source.ToString();
+
+        if (currentSource.Contains("play"))
+        {
+            PlayPauseImage.Source = "pause_cu.png";
+        }
+        else
+        {
+            PlayPauseImage.Source = "play_cu.png";
+        }
+    }
+
+    private void OnRewindClicked(object sender, EventArgs e)
+    {
+        // TODO: Implement rewind functionality
+    }
+
+    private void OnFastForwardClicked(object sender, EventArgs e)
+    {
+        // TODO: Implement fast forward functionality
+    }
+
+    private async void OnNewButtonClicked(object sender, EventArgs e)
+    {
+        if (_isRecording)
+        {
+            await StopRecordingAsync();
         }
 
-        private async void OnDeleteButtonClicked(object sender, EventArgs e)
+        FilenameLabel.Text = "Untitled";
+        DurationLabel.Text = "0:00:00 / 0:00:00";
+        _currentRecordingPath = null;
+
+        MicImageOverlay.Opacity = 0;
+        MicPulseImage.Opacity = 0;
+    }
+
+    private async void OnDeleteButtonClicked(object sender, EventArgs e)
+    {
+        if (string.IsNullOrEmpty(_currentRecordingPath))
         {
-            bool confirm = await DisplayAlert("Delete Recording?", "This will permanently delete the current file.", "Delete", "Cancel");
-            if (!confirm) return;
-
-            _audio.Stop();
-            _state.SetState(RecordingState.Idle);
-
-            if (!string.IsNullOrEmpty(_currentFilePath) && File.Exists(_currentFilePath))
-            {
-                File.Delete(_currentFilePath);
-            }
-
-            ResetUI();
-            _currentFilePath = null;
-            FilenameLabel.Text = "Untitled.wav";
+            await DisplayAlert("Delete", "No recording to delete", "OK");
+            return;
         }
-        private async void OnRenameButtonClicked(object sender, EventArgs e)
+
+        var confirm = await DisplayAlert("Delete Recording",
+            "Are you sure you want to delete this recording?",
+            "Delete", "Cancel");
+
+        if (confirm)
         {
-            string currentName = Path.GetFileNameWithoutExtension(_currentFilePath ?? "Untitled");
-            string? newName = await DisplayPromptAsync("Rename Clip", "Enter new filename:", initialValue: currentName, maxLength: 64);
-
-            if (!string.IsNullOrWhiteSpace(newName))
+            try
             {
-                string newFilename = newName.Trim() + ".wav";
-                string directory = _audio.GetSaveDirectory();
-
-                if (!string.IsNullOrEmpty(_currentFilePath) && File.Exists(_currentFilePath))
+                if (File.Exists(_currentRecordingPath))
                 {
-                    string newPath = Path.Combine(directory, newFilename);
-                    File.Move(_currentFilePath, newPath);
-                    _currentFilePath = newPath;
-                }
-                else
-                {
-                    _currentFilePath = Path.Combine(directory, newFilename);
+                    File.Delete(_currentRecordingPath);
                 }
 
-                FilenameLabel.Text = newFilename;
+                OnNewButtonClicked(sender, e);
+                await DisplayAlert("Success", "Recording deleted", "OK");
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Error", $"Failed to delete: {ex.Message}", "OK");
             }
         }
-        private async Task StartRecordingAsync()
-        {
-            if (string.IsNullOrEmpty(_currentFilePath))
-            {
-                string filename = GenerateDefaultFilename();
-                _currentFilePath = Path.Combine(_audio.GetSaveDirectory(), filename);
-                FilenameLabel.Text = filename;
-            }
+    }
 
-            string sessionName = Path.GetFileNameWithoutExtension(_currentFilePath);
-            await _audio.StartRecordingAsync(sessionName);
-            _state.SetState(RecordingState.Recording);
+    private async Task StartRecordingAsync()
+    {
+        try
+        {
+            var recordingsPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "ProVoiceLedger",
+                "Recordings"
+            );
+            Directory.CreateDirectory(recordingsPath);
+
+            var filename = string.IsNullOrWhiteSpace(FilenameLabel.Text) || FilenameLabel.Text == "Untitled"
+                ? $"Recording_{DateTime.Now:yyyyMMdd_HHmmss}.wav"
+                : $"{FilenameLabel.Text}_{DateTime.Now:yyyyMMdd_HHmmss}.wav";
+
+            _currentRecordingPath = Path.Combine(recordingsPath, filename);
+            _writer = new WaveFileWriter(_currentRecordingPath, _waveIn!.WaveFormat);
+
             _recordingStartTime = DateTime.Now;
+            _waveIn!.StartRecording();
+            _isRecording = true;
+            _durationTimer.Start();
 
-            _arcDrawable.IsRecording = true;
-            _buffer.UpdateFromMic(_audio.Amplitude); 
-            VisualizerCanvas.Invalidate();
+            await MicImageOverlay.FadeTo(1.0, 300);
+            MicPulseImage.Opacity = 0.7;
 
-            _recordingCts = new CancellationTokenSource();
-            _ = Task.Run(async () =>
+            _ = PulseAnimationAsync();
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Error", $"Failed to start recording: {ex.Message}", "OK");
+        }
+    }
+
+    private async Task StopRecordingAsync()
+    {
+        try
+        {
+            _waveIn?.StopRecording();
+            _isRecording = false;
+            _durationTimer.Stop();
+
+            await MicImageOverlay.FadeTo(0.0, 300);
+            await MicPulseImage.FadeTo(0.0, 300);
+
+            if (!string.IsNullOrEmpty(_currentRecordingPath))
             {
-                while (!_recordingCts.Token.IsCancellationRequested)
-                {
-                    double elapsed = (DateTime.Now - _recordingStartTime).TotalSeconds;
-                    _audio.SetCurrentTime(elapsed);
-
-                    float amp = _audio.Amplitude;
-                    _buffer.UpdateFromMic(amp);
-
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        string formatted = FormatTime(TimeSpan.FromSeconds(elapsed));
-                        DurationLabel.Text = $"{formatted} / {formatted}";
-                        VisualizerCanvas.Invalidate();
-                    });
-
-                    await Task.Delay(100);
-                }
-            });
+                await DisplayAlert("Success", "Recording saved!", "OK");
+            }
         }
-
-        private async Task StopRecordingAsync()
+        catch (Exception ex)
         {
-            _recordingCts?.Cancel();
-            await _audio.StopRecordingAsync();
-            _state.SetState(RecordingState.Idle);
-            _audio.SetCurrentTime(0);
-            OnTimeUpdated(TimeSpan.Zero);
+            await DisplayAlert("Error", $"Failed to stop recording: {ex.Message}", "OK");
+        }
+    }
+
+    private async Task PulseAnimationAsync()
+    {
+        while (_isRecording)
+        {
+            await MicPulseImage.FadeTo(0.0, 1000);
+            if (_isRecording)
+            {
+                await MicPulseImage.FadeTo(0.7, 1000);
+            }
+        }
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+
+        if (_isRecording)
+        {
+            _waveIn?.StopRecording();
         }
 
-        protected override void OnDisappearing()
-        {
-            base.OnDisappearing();
-            _recordingCts?.Cancel();
-            _state.Reset();
-        }
+        _durationTimer?.Stop();
+        _durationTimer?.Dispose();
+        _waveIn?.Dispose();
+        _writer?.Dispose();
     }
 }
