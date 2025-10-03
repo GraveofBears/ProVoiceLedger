@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Controls;
+﻿using Microsoft.Maui.Graphics;
 using System;
 using ProVoiceLedger.Core.Services;
 using ProVoiceLedger.Core.Audio;
@@ -9,7 +9,7 @@ namespace ProVoiceLedger
 {
     public partial class App : Application
     {
-        public static IServiceProvider Services { get; private set; }
+        public static IServiceProvider Services { get; private set; } = null!;
 
         public static IRecordingService RecordingService =>
             Services.GetRequiredService<IRecordingService>();
@@ -19,11 +19,23 @@ namespace ProVoiceLedger
 
         public App(IServiceProvider services)
         {
-            Services = services;
-            InitializeComponent();
+            try
+            {
+                Services = services;
+                InitializeComponent();
 
-            // 🌒 Start with splash screen wrapped in navigation
-            MainPage = new NavigationPage(new Pages.SplashPage());
+                // Start with splash screen wrapped in navigation
+                MainPage = new NavigationPage(new Pages.SplashPage());
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"App constructor error: {ex}");
+                System.IO.File.WriteAllText(
+                    System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "ProVoiceLedger_app_crash.txt"),
+                    $"App crash at {DateTime.Now}\n{ex}"
+                );
+                throw;
+            }
         }
     }
 }

@@ -19,7 +19,7 @@ namespace ProVoiceLedger
             var builder = MauiApp.CreateBuilder();
 
             builder
-                .UseMauiApp<App>() // App.xaml.cs handles splash and navigation
+                .UseMauiApp<App>() // ✅ This will use factory method below
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -54,6 +54,7 @@ namespace ProVoiceLedger
 
             // 📄 Pages (transient for fresh state)
             builder.Services.AddTransient<RecordingPage>();
+            builder.Services.AddTransient<GradientPage>(); // ✅ Added GradientPage
             builder.Services.AddTransient<RecordingListPage>();
             builder.Services.AddTransient<LoginPage>();
             builder.Services.AddTransient<SessionHistoryPage>();
@@ -61,8 +62,12 @@ namespace ProVoiceLedger
             builder.Services.AddTransient<SettingsPage>();
             builder.Services.AddTransient<MainTabbedPage>();
 
-            // 🛠️ App entry point with injected services
+            // 🛠️ App entry point with dependency injection
             builder.Services.AddSingleton<App>(provider => new App(provider));
+
+#if DEBUG
+            builder.Logging.AddDebug();
+#endif
 
             var app = builder.Build();
 

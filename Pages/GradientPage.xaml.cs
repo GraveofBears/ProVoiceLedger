@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Devices;
+﻿using Microsoft.Maui.Devices;
 using ProVoiceLedger.Core.Audio;
 using ProVoiceLedger.Core.Models;
 using ProVoiceLedger.Core.Services;

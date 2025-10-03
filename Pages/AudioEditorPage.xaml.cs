@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 using ProVoiceLedger.Core.Models;
 using ProVoiceLedger.Graphics;
 using System;

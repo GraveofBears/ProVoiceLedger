@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui.Controls;
+﻿using Microsoft.Maui.Graphics;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -27,7 +27,7 @@ public partial class AppShell : Shell
         }
     }
 
-    private void Log(string message)
+    private static void Log(string message)
     {
         string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         string logPath = Path.Combine(FileSystem.AppDataDirectory, "launchlog.txt");
@@ -35,7 +35,7 @@ public partial class AppShell : Shell
         Debug.WriteLine($"{timestamp}: {message}");
     }
 
-    private void LogFatal(string prefix, Exception ex)
+    private static void LogFatal(string prefix, Exception ex)
     {
         string fatalPath = Path.Combine(FileSystem.AppDataDirectory, "fatal.txt");
         File.WriteAllText(fatalPath, $"{prefix} at {DateTime.Now:yyyy-MM-dd HH:mm:ss}\n{ex}\n");

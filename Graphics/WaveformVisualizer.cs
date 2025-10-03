@@ -1,7 +1,6 @@
 ﻿// File: Graphics/WaveformVisualizer.cs
 using System;
 using System.IO;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using ProVoiceLedger.Graphics;
 
@@ -65,5 +64,7 @@ namespace ProVoiceLedger.Graphics
             _buffer.Push(amplitude);
             _canvas.Invalidate();
         }
+
+        public bool IsRecording { get; set; } = false;
     }
 }

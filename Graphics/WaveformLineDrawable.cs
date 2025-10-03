@@ -1,5 +1,5 @@
 ﻿// /ProVoiceLedger/Controls/WaveformLineDrawable.cs
-namespace ProVoiceLedger.Controls
+namespace ProVoiceLedger.Graphics
 {
     public class WaveformLineDrawable : IDrawable
     {

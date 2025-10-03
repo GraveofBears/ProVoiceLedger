@@ -13,7 +13,6 @@ public partial class RecordingPage : ContentPage
     private WaveFileWriter? _writer;
     private string? _currentRecordingPath;
     private bool _isRecording;
-    private bool _isPaused;
     private DateTime _recordingStartTime;
     private readonly System.Timers.Timer _durationTimer;
 
@@ -24,7 +23,7 @@ public partial class RecordingPage : ContentPage
         _durationTimer = new System.Timers.Timer(100);
         _durationTimer.Elapsed += (s, e) =>
         {
-            if (_isRecording && !_isPaused)
+            if (_isRecording)
             {
                 var elapsed = DateTime.Now - _recordingStartTime;
                 MainThread.BeginInvokeOnMainThread(() =>
@@ -60,7 +59,7 @@ public partial class RecordingPage : ContentPage
 
     private void OnDataAvailable(object? sender, WaveInEventArgs e)
     {
-        if (_writer != null && _isRecording && !_isPaused)
+        if (_writer != null && _isRecording)
         {
             _writer.Write(e.Buffer, 0, e.BytesRecorded);
             _writer.Flush();
@@ -107,7 +106,7 @@ public partial class RecordingPage : ContentPage
 
     private void OnPlayPauseButtonClicked(object? sender, EventArgs e)
     {
-        var currentSource = PlayPauseImage.Source.ToString();
+        var currentSource = PlayPauseImage.Source?.ToString() ?? "";
 
         if (currentSource.Contains("play"))
         {
