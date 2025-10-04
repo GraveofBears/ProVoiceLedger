@@ -9,12 +9,15 @@ using ProVoiceLedger.Core.Models;
 using ProVoiceLedger.Core.Services;
 using ProVoiceLedger.Core.Audio;
 using ProVoiceLedger.Pages;
+using SQLitePCL;
 
 namespace ProVoiceLedger
 {
     public static class MauiProgram
     {
-        public static IServiceProvider Services { get; private set; } // Expose the service provider
+        // Fix for CS8618: Non-nullable property 'Services' must contain a non-null value when exiting constructor.
+        // Make the property nullable to satisfy the compiler and avoid startup exceptions.
+        public static IServiceProvider? Services { get; private set; } // Expose the service provider
 
         public static MauiApp CreateMauiApp()
         {
@@ -39,63 +42,17 @@ namespace ProVoiceLedger
 
             // Core services with try-catch for diagnostics
             builder.Services.AddSingleton<UserRepository>(provider =>
-            {
-                try { return new UserRepository(); }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"UserRepository init error: {ex}");
-                    throw;
-                }
-            });
+                CreateWithDiagnostics(() => new UserRepository(), nameof(UserRepository)));
             builder.Services.AddSingleton<AuthService>(provider =>
-            {
-                try
-                {
-                    var userRepository = provider.GetRequiredService<UserRepository>();
-                    return new AuthService(userRepository);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"AuthService init error: {ex}");
-                    throw;
-                }
-            });
+                CreateWithDiagnostics(() => new AuthService(provider.GetRequiredService<UserRepository>()), nameof(AuthService)));
             builder.Services.AddSingleton<FileStorageService>(provider =>
-            {
-                try { return new FileStorageService(); }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"FileStorageService init error: {ex}");
-                    throw;
-                }
-            });
+                CreateWithDiagnostics(() => new FileStorageService(), nameof(FileStorageService)));
             builder.Services.AddSingleton<CommunicationService>(provider =>
-            {
-                try
-                {
-                    var authService = provider.GetRequiredService<AuthService>();
-                    var fileStorageService = provider.GetRequiredService<FileStorageService>();
-                    return new CommunicationService(authService, fileStorageService);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"CommunicationService init error: {ex}");
-                    throw;
-                }
-            });
+                CreateWithDiagnostics(() => new CommunicationService(
+                    provider.GetRequiredService<AuthService>(),
+                    provider.GetRequiredService<FileStorageService>()), nameof(CommunicationService)));
             builder.Services.AddSingleton<PipeServerService>(provider =>
-            {
-                try
-                {
-                    var commService = provider.GetRequiredService<CommunicationService>();
-                    return new PipeServerService(commService);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"PipeServerService init error: {ex}");
-                    throw;
-                }
-            });
+                CreateWithDiagnostics(() => new PipeServerService(provider.GetRequiredService<CommunicationService>()), nameof(PipeServerService)));
 
             // Audio and recording services with try-catch
             builder.Services.AddSingleton<IAudioEngine>(provider =>
@@ -162,52 +119,17 @@ namespace ProVoiceLedger
             });
 
             builder.Services.AddSingleton<RecordingUploadService>(provider =>
-            {
-                try { return new RecordingUploadService(); }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"RecordingUploadService init error: {ex}");
-                    throw;
-                }
-            });
+                CreateWithDiagnostics(() => new RecordingUploadService(), nameof(RecordingUploadService)));
 
             // Pages (transient, with try-catch for diagnostics)
             builder.Services.AddTransient<RecordingPage>(provider =>
-            {
-                try { return new RecordingPage(); }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"RecordingPage init error: {ex}");
-                    throw;
-                }
-            });
+                CreateWithDiagnostics(() => new RecordingPage(), nameof(RecordingPage)));
             builder.Services.AddTransient<GradientPage>(provider =>
-            {
-                try { return new GradientPage(); }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"GradientPage init error: {ex}");
-                    throw;
-                }
-            });
+                CreateWithDiagnostics(() => new GradientPage(), nameof(GradientPage)));
             builder.Services.AddTransient<RecordingListPage>(provider =>
-            {
-                try { return new RecordingListPage(); }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"RecordingListPage init error: {ex}");
-                    throw;
-                }
-            });
+                CreateWithDiagnostics(() => new RecordingListPage(), nameof(RecordingListPage)));
             builder.Services.AddTransient<LoginPage>(provider =>
-            {
-                try { return new LoginPage(); }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"LoginPage init error: {ex}");
-                    throw;
-                }
-            });
+                CreateWithDiagnostics(() => new LoginPage(), nameof(LoginPage)));
             builder.Services.AddTransient<SessionHistoryPage>(provider =>
             {
                 try
@@ -222,32 +144,11 @@ namespace ProVoiceLedger
                 }
             });
             builder.Services.AddTransient<SplashPage>(provider =>
-            {
-                try { return new SplashPage(); }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"SplashPage init error: {ex}");
-                    throw;
-                }
-            });
+                CreateWithDiagnostics(() => new SplashPage(), nameof(SplashPage)));
             builder.Services.AddTransient<SettingsPage>(provider =>
-            {
-                try { return new SettingsPage(); }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"SettingsPage init error: {ex}");
-                    throw;
-                }
-            });
+                CreateWithDiagnostics(() => new SettingsPage(), nameof(SettingsPage)));
             builder.Services.AddTransient<MainTabbedPage>(provider =>
-            {
-                try { return new MainTabbedPage(); }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"MainTabbedPage init error: {ex}");
-                    throw;
-                }
-            });
+                CreateWithDiagnostics(() => new MainTabbedPage(), nameof(MainTabbedPage)));
 
 #if DEBUG
             builder.Logging.AddDebug();
@@ -255,15 +156,26 @@ namespace ProVoiceLedger
 
             var app = builder.Build();
 
+            MauiProgram.SetServiceProvider(app.Services);
+
             // var pipeServer = app.Services.GetRequiredService<PipeServerService>();
             // Task.Run(() => pipeServer.StartListenerAsync());
 
             return app;
         }
 
-        public static void SetServiceProvider(IServiceProvider serviceProvider)
+        // Helper methods for service registration with diagnostics
+        private static T CreateWithDiagnostics<T>(Func<T> factory, string name)
         {
-            Services = serviceProvider;
+            try { return factory(); }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"{name} init error: {ex}");
+                throw;
+            }
         }
+
+        // Expression-bodied member for SetServiceProvider
+        public static void SetServiceProvider(IServiceProvider serviceProvider) => Services = serviceProvider;
     }
 }

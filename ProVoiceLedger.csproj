@@ -16,7 +16,7 @@
     
     <!-- Unpackaged deployment with self-contained runtime -->
     <WindowsPackageType>None</WindowsPackageType>
-    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
     
     <NoWarn>$(NoWarn);CA1416</NoWarn>
     
@@ -38,6 +38,7 @@
     <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.90" />
     <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.90" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.250916003" />
     <PackageReference Include="Plugin.Maui.Audio" Version="3.0.0" />
     <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
