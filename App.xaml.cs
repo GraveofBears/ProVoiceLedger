@@ -1,9 +1,7 @@
 ﻿using Microsoft.Maui.Graphics;
 using System;
 using ProVoiceLedger.Core.Services;
-using ProVoiceLedger.Core.Audio;
 using ProVoiceLedger.Core.Models;
-using ProVoiceLedger.AudioBackup;
 
 namespace ProVoiceLedger
 {
@@ -17,25 +15,26 @@ namespace ProVoiceLedger
         public static SessionDatabase SessionDatabase =>
             Services.GetRequiredService<SessionDatabase>();
 
-        public App(IServiceProvider services)
+        public App()
         {
-            try
+            InitializeComponent();
+            MainPage = new ContentPage
             {
-                Services = services;
-                InitializeComponent();
+                Content = new Label
+                {
+                    Text = "ProVoiceLedger Started!",
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Center,
+                    FontSize = 24,
+                    TextColor = Colors.White
+                },
+                BackgroundColor = Colors.Black
+            };
+        }
 
-                // Start with splash screen wrapped in navigation
-                MainPage = new NavigationPage(new Pages.SplashPage());
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"App constructor error: {ex}");
-                System.IO.File.WriteAllText(
-                    System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "ProVoiceLedger_app_crash.txt"),
-                    $"App crash at {DateTime.Now}\n{ex}"
-                );
-                throw;
-            }
+        public void SetServiceProvider(IServiceProvider serviceProvider)
+        {
+            Services = serviceProvider;
         }
     }
 }

@@ -21,16 +21,14 @@ namespace ProVoiceLedger.Pages
         {
             base.OnAppearing();
 
-            // 🌒 Logo spectral pulse animation
+            // Logo pulse animation
             LogoImage.Opacity = 0;
-            await LogoImage.FadeTo(1, 1200, Easing.CubicInOut); // Fade in
+            await LogoImage.FadeTo(1, 1200, Easing.CubicInOut);
 
-            // Optional: ambient audio trigger or glow overlay here
+            await Task.Delay(2000); // Wait 2 seconds
 
-            await Task.Delay(400); // Let animation settle
-
-            // 🎯 Navigate to login page
-            await Navigation.PushAsync(new LoginPage());
+            // For now, just show a message instead of navigating
+            await DisplayAlert("Success", "App initialized successfully!", "OK");
         }
     }
 }
