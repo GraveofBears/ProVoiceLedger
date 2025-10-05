@@ -26,16 +26,17 @@ namespace ProVoiceLedger
             Services = services;
 
 #if WINDOWS
-            // Intercept and provide fallback for missing WinUI resources
+            // Inject fallback brushes to prevent WinUI resource errors
             try
             {
-                // Create fallback resources before InitializeComponent
-                var fallbackResources = new ResourceDictionary();
-                fallbackResources.Add("AcrylicBackgroundFillColorDefaultBrush", new SolidColorBrush(Colors.Black));
-                fallbackResources.Add("AcrylicInAppFillColorDefaultBrush", new SolidColorBrush(Colors.Black));
-                fallbackResources.Add("SystemControlAcrylicWindowBrush", new SolidColorBrush(Colors.Black));
+                var fallbackResources = new ResourceDictionary
+                {
+                    { "AcrylicBackgroundFillColorDefaultBrush", new SolidColorBrush(Color.FromArgb("#CC000000")) },
+                    { "AcrylicInAppFillColorDefaultBrush", new SolidColorBrush(Color.FromArgb("#CC000000")) },
+                    { "SystemControlAcrylicWindowBrush", new SolidColorBrush(Color.FromArgb("#CC000000")) }
+                };
 
-                this.Resources.MergedDictionaries.Add(fallbackResources);
+                Application.Current.Resources.MergedDictionaries.Add(fallbackResources);
             }
             catch (Exception ex)
             {
@@ -46,6 +47,7 @@ namespace ProVoiceLedger
             InitializeComponent();
 
 #if WINDOWS
+            // Optional: set a default window background brush
             Resources["WindowBackgroundBrush"] = new SolidColorBrush(Colors.Black);
 #endif
 

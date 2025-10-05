@@ -29,24 +29,21 @@ namespace ProVoiceLedger
 
         public static MauiApp CreateMauiApp()
         {
-            // Global unhandled exception handler
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
             {
                 System.Diagnostics.Debug.WriteLine($"[GLOBAL] Unhandled exception: {e.ExceptionObject}");
             };
 
 #if WINDOWS
-            // First-chance exception handler to suppress WinUI resource errors
             AppDomain.CurrentDomain.FirstChanceException += (sender, e) =>
             {
                 if (e.Exception is System.Runtime.InteropServices.COMException comEx)
                 {
-                    if (comEx.HResult == unchecked((int)0x80004005) && // E_FAIL
+                    if (comEx.HResult == unchecked((int)0x80004005) &&
                         (e.Exception.Message.Contains("AcrylicBackgroundFillColorDefaultBrush") ||
                          e.Exception.Message.Contains("Cannot find a resource")))
                     {
-                        // Silently suppress - this is WinUI looking for theme resources we don't use
-                        return;
+                        return; // Suppress WinUI theme resource errors
                     }
                 }
             };
@@ -61,7 +58,6 @@ namespace ProVoiceLedger
                 .ConfigureMauiHandlers(handlers =>
                 {
 #if WINDOWS
-                    // Prevent automatic loading of WinUI XamlControlsResources
                     handlers.AddHandler(typeof(Microsoft.Maui.Controls.Application), typeof(Microsoft.Maui.Handlers.ApplicationHandler));
 #endif
                 })
@@ -83,10 +79,16 @@ namespace ProVoiceLedger
                         {
                             window.SystemBackdrop = null;
 
-                            // Prevent WinUI from looking up missing system brushes
                             if (window.Content is FrameworkElement root)
                             {
-                                root.Resources.MergedDictionaries.Clear();
+                                var fallbackResources = new Microsoft.UI.Xaml.ResourceDictionary
+                                {
+                                    { "AcrylicBackgroundFillColorDefaultBrush", new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(204, 0, 0, 0)) },
+                                    { "AcrylicInAppFillColorDefaultBrush", new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(204, 0, 0, 0)) },
+                                    { "SystemControlAcrylicWindowBrush", new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(204, 0, 0, 0)) }
+                                };
+
+                                root.Resources.MergedDictionaries.Add(fallbackResources);
                             }
                         }
                         catch (Exception ex)
@@ -98,7 +100,6 @@ namespace ProVoiceLedger
             });
 #endif
 
-            // Core services
             builder.Services.AddSingleton<UserRepository>(provider =>
                 CreateWithDiagnostics(() => new UserRepository(), nameof(UserRepository)));
 
@@ -120,7 +121,6 @@ namespace ProVoiceLedger
                     new PipeServerService(provider.GetRequiredService<CommunicationService>()),
                     nameof(PipeServerService)));
 
-            // Audio services
             builder.Services.AddSingleton<IAudioEngine>(provider =>
                 CreateWithDiagnostics(() => new MockAudioEngine(), nameof(MockAudioEngine)));
 
@@ -130,7 +130,6 @@ namespace ProVoiceLedger
             builder.Services.AddSingleton<IAudioPlaybackService>(provider =>
                 CreateWithDiagnostics(() => new AudioPlaybackService(), nameof(AudioPlaybackService)));
 
-            // Database
             string dbDirectory = FileSystem.AppDataDirectory;
             Directory.CreateDirectory(dbDirectory);
             string dbPath = Path.Combine(dbDirectory, "sessions.db");
@@ -138,7 +137,6 @@ namespace ProVoiceLedger
             builder.Services.AddSingleton(provider =>
                 CreateWithDiagnostics(() => new SessionDatabase(dbPath), nameof(SessionDatabase)));
 
-            // Recording services
             builder.Services.AddSingleton<IRecordingService>(provider =>
                 CreateWithDiagnostics(() =>
                     new RecordingService(provider.GetRequiredService<IAudioCaptureService>()),
@@ -147,31 +145,15 @@ namespace ProVoiceLedger
             builder.Services.AddSingleton<RecordingUploadService>(provider =>
                 CreateWithDiagnostics(() => new RecordingUploadService(), nameof(RecordingUploadService)));
 
-            // Pages - Singletons for TabbedPage children, Transient for others
-            builder.Services.AddSingleton<RecordingPage>(provider =>
-                CreateWithDiagnostics(() => new RecordingPage(), nameof(RecordingPage)));
-
-            builder.Services.AddSingleton<RecordingListPage>(provider =>
-                CreateWithDiagnostics(() => new RecordingListPage(), nameof(RecordingListPage)));
-
-            builder.Services.AddSingleton<SettingsPage>(provider =>
-                CreateWithDiagnostics(() => new SettingsPage(), nameof(SettingsPage)));
-
-            // Transient pages (not in tabbed view)
-            builder.Services.AddTransient<GradientPage>(provider =>
-                CreateWithDiagnostics(() => new GradientPage(), nameof(GradientPage)));
-
-            builder.Services.AddTransient<LoginPage>(provider =>
-                CreateWithDiagnostics(() => new LoginPage(), nameof(LoginPage)));
-
+            builder.Services.AddSingleton<RecordingPage>();
+            builder.Services.AddSingleton<RecordingListPage>();
+            builder.Services.AddSingleton<SettingsPage>();
+            builder.Services.AddTransient<GradientPage>();
+            builder.Services.AddTransient<LoginPage>();
             builder.Services.AddTransient<SessionHistoryPage>(provider =>
-                CreateWithDiagnostics(() => new SessionHistoryPage(provider.GetRequiredService<SessionDatabase>()), nameof(SessionHistoryPage)));
-
-            builder.Services.AddTransient<SplashPage>(provider =>
-                CreateWithDiagnostics(() => new SplashPage(), nameof(SplashPage)));
-
-            builder.Services.AddTransient<MainTabbedPage>(provider =>
-                CreateWithDiagnostics(() => new MainTabbedPage(), nameof(MainTabbedPage)));
+                new SessionHistoryPage(provider.GetRequiredService<SessionDatabase>()));
+            builder.Services.AddTransient<SplashPage>();
+            builder.Services.AddTransient<MainTabbedPage>();
 
 #if DEBUG
             builder.Logging.AddDebug();
