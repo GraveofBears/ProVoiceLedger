@@ -16,7 +16,7 @@
     
     <!-- Unpackaged deployment with self-contained runtime -->
     <WindowsPackageType>None</WindowsPackageType>
-    <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     
     <NoWarn>$(NoWarn);CA1416</NoWarn>
     

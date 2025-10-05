@@ -20,15 +20,17 @@ namespace ProVoiceLedger.Pages
         protected override async void OnAppearing()
         {
             base.OnAppearing();
+            System.Diagnostics.Debug.WriteLine(">>> SplashPage: OnAppearing called");
 
-            // Logo pulse animation
             LogoImage.Opacity = 0;
             await LogoImage.FadeTo(1, 1200, Easing.CubicInOut);
+            System.Diagnostics.Debug.WriteLine(">>> SplashPage: Logo fade complete");
 
-            await Task.Delay(2000); // Wait 2 seconds
+            await Task.Delay(2000);
+            System.Diagnostics.Debug.WriteLine(">>> SplashPage: Navigating to LoginPage");
 
-            // For now, just show a message instead of navigating
-            await DisplayAlert("Success", "App initialized successfully!", "OK");
+            await Navigation.PushAsync(new LoginPage());
+            System.Diagnostics.Debug.WriteLine(">>> SplashPage: Navigation complete");
         }
     }
 }
